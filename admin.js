@@ -1,8 +1,8 @@
 // Sample Products
 let products = [
-  { id: 1, name: "iPhone 15 Pro", price: 90000, stock: 39 },
-  { id: 2, name: "MacBook Pro", price: 140000, stock: 23 },
-  { id: 3, name: "Fresh Apples", price: 150, stock: 99 }
+  { id: 1, name: "iPhone 15 Pro", price:  1099, stock: 39 },
+  { id: 2, name: "MacBook Pro", price: 3000, stock: 23 },
+  { id: 3, name: "Fresh Apples", price: 2, stock: 58 }
 ];
 
 // Sample Orders
@@ -11,14 +11,14 @@ let orders = [
     id: "d0c08703",
     customer: "hum5@gmail.com",
     items: ["iPhone 15 Pro x1", "MacBook Pro x1", "Fresh Apples x1"],
-    total: 230150.00,
+    total: 4101.00,
     status: "Pending"
   },
   {
     id: "b5ad4726",
     customer: "hunm5@gmail.com",
     items: ["iPhone 15 Pro x2"],
-    total: 180000.00,
+    total: 2198.00,
     status: "Pending"
   }
 ];
