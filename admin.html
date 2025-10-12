@@ -15,9 +15,9 @@
       <h2>QuickCart</h2>
     </div>
     <div class="nav-right">
-      <span>Hello, admin</span>
-      <button class="logout-btn">↪ Logout</button>
-     
+      <span id="adminGreeting">Hello, admin</span>
+      <button class="admin-btn">Admin</button>
+      <button class="logout-btn">Logout</button>
     </div>
   </nav>
 
@@ -25,6 +25,8 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
     <button class="tab-btn" onclick="showTab('products')">Products</button>
+    <button class="tab-btn" onclick="showTab('carts')">Cart Management</button>
+    <button class="tab-btn" onclick="showTab('customers')">Customers</button>
     <button class="tab-btn" onclick="showTab('orders')">Orders</button>
     <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
   </div>
@@ -33,22 +35,37 @@
   <section id="dashboard" class="tab-content active">
     <h2>Admin Dashboard</h2>
     <div class="stats">
-      <div class="card">📦 Total Products <h3>3</h3></div>
-      <div class="card">🧾 Total Orders <h3>4</h3></div>
-      <div class="card">💰 Total Revenue <h3>6299</h3></div>
-      <div class="card">⚠️ Low Stock <h3>0</h3></div>
+      <div class="card">📦 Total Products <h3 id="totalProducts">0</h3></div>
+      <div class="card">👥 Total Customers <h3 id="totalCustomers">0</h3></div>
+      <div class="card">🧾 Total Orders <h3 id="totalOrders">0</h3></div>
+      <div class="card">💰 Total Revenue <h3 id="totalRevenue">₹0</h3></div>
+      <div class="card">✅ Delivered Revenue <h3 id="deliveredRevenue">₹0</h3></div>
+      <div class="card">🛒 Cart Items <h3 id="totalCartItems">0</h3></div>
+      <div class="card">⏳ Pending Cart Items <h3 id="pendingCartItems">0</h3></div>
+      <div class="card">⚠️ Low Stock <h3 id="lowStock">0</h3></div>
     </div>
 
     <div class="performance">
       <div class="card">
         <h3>Today's Performance</h3>
-        <p>Orders Today: 0</p>
-        <p>Revenue Today: 6299</p>
-        <p>Pending Orders: 0</p>
+        <p>Orders Today: <span id="ordersToday">0</span></p>
+        <p>Revenue Today: ₹<span id="revenueToday">0.00</span></p>
+        <p>Pending Orders: <span id="pendingOrders">0</span></p>
+        <p>Approved Orders: <span id="approvedOrders">0</span></p>
+        <p>Delivered Orders: <span id="deliveredOrders">0</span></p>
       </div>
       <div class="card">
-        <h3>Low Stock Alert</h3>
-        <p>All products are well stocked!</p>
+        <h3>Cart Management</h3>
+        <p>Total Cart Items: <span id="cartItemsCount">0</span></p>
+        <p>Pending Approval: <span id="pendingCartCount">0</span></p>
+        <p>Approved Items: <span id="approvedCartCount">0</span></p>
+        <p>Cart Total Value: ₹<span id="cartTotalValue">0.00</span></p>
+      </div>
+      <div class="card">
+        <h3>Top Selling Products</h3>
+        <div id="topProducts">
+          <p>Loading...</p>
+        </div>
       </div>
     </div>
   </section>
@@ -60,50 +77,54 @@
     <div class="products-grid">
       <div class="card">
         <h3>iPhone 15 Pro</h3>
-        <p> 1099 — 39 in stock</p>
+        <p>&#8377;90000 — 39 in stock</p>
         <button>Edit</button>
         <button class="delete">🗑 Delete</button>
       </div>
       <div class="card">
         <h3>MacBook Pro</h3>
-        <p>3000 — 23 in stock</p>
+        <p>&#8377;140000 — 23 in stock</p>
         <button>Edit</button>
         <button class="delete">🗑 Delete</button>
       </div>
       <div class="card">
         <h3>Fresh Apples</h3>
-        <p>2 — 58 in stock</p>
+        <p>&#8377;150 — 99 in stock</p>
         <button>Edit</button>
         <button class="delete">🗑 Delete</button>
       </div>
     </div>
   </section>
 
+  <!-- Cart Management -->
+  <section id="carts" class="tab-content">
+    <h2>Cart Management</h2>
+    <div class="filter-section">
+      <select id="cartStatusFilter" onchange="filterCarts()">
+        <option value="all">All Cart Items</option>
+        <option value="pending">Pending Approval</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div id="cartsList">
+      <p>Loading cart items...</p>
+    </div>
+  </section>
+
+  <!-- Customer Management -->
+  <section id="customers" class="tab-content">
+    <h2>Customer Management</h2>
+    <div id="customersList">
+      <p>Loading customers...</p>
+    </div>
+  </section>
+
   <!-- Orders -->
   <section id="orders" class="tab-content">
     <h2>Order Management</h2>
-    <div class="order">
-      <h4>Order #d0c08703</h4>
-      <p>Customer: hum5@gmail.com</p>
-      <p>Items: iPhone 15 Pro x1, MacBook Pro x1, Fresh Apples x1</p>
-      <p>Total: 4101</p>
-      <select>
-        <option>Pending</option>
-        <option>Confirmed</option>
-        <option>Shipped</option>
-      </select>
-    </div>
-
-    <div class="order">
-      <h4>Order #b5ad4726</h4>
-      <p>Customer: hunm5@gmail.com</p>
-      <p>Items: iPhone 15 Pro x2</p>
-      <p>Total: 2198</p>
-      <select>
-        <option>Pending</option>
-        <option>Confirmed</option>
-        <option>Shipped</option>
-      </select>
+    <div id="ordersList">
+      <p>Loading orders...</p>
     </div>
   </section>
 
@@ -125,6 +146,18 @@
       document.getElementById(tabId).classList.add('active');
       event.target.classList.add('active');
     }
+
+    // Update admin greeting
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(data => {
+        if (data.authenticated && data.user.role === 'admin') {
+          document.getElementById('adminGreeting').textContent = `Hello, ${data.user.name}`;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+      });
   </script>
   <script src="admin.js"></script>
 </body>
