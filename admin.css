@@ -11,9 +11,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: rgba(255,255,255,0.9);
   padding: 15px 40px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 24px rgba(15,23,42,0.06);
 }
 
 .logo {
@@ -58,11 +58,13 @@
   background: #e5e7eb;
   border-radius: 6px;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .tab-btn.active {
   background: #111827;
   color: #fff;
+  box-shadow: 0 10px 20px rgba(17,24,39,0.12);
 }
 
 /* Tab Content */
@@ -87,7 +89,7 @@
   padding: 20px;
   border-radius: 8px;
   flex: 1;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 40px rgba(2,6,23,0.08);
 }
 
 .performance {
@@ -105,6 +107,7 @@
 .products-grid .card {
   flex: 1;
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .add-btn {
@@ -115,6 +118,8 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 10px 20px rgba(17,24,39,0.12);
 }
 
 /* Orders */
@@ -131,3 +136,54 @@
   padding: 6px;
   border-radius: 6px;
 }
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-shipped {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.status-delivered {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-select {
+  margin-top: 10px;
+  padding: 6px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+
