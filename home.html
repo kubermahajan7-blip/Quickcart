@@ -13,7 +13,10 @@
       <span class="icon">🛍️</span>
       <h2>QuickCart</h2>
     </div>
-    <button class="login-btn">👤 Login</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="login-btn" id="dashboardBtn" style="display:none;" onclick="window.location.href='/customer-dashboard.html'">📊 Dashboard</button>
+      <button class="login-btn" id="loginBtn" onclick="window.location.href='index.html'">🔐 Login</button>
+    </div>
   </nav>
 
   <!-- Hero Section -->
@@ -35,53 +38,245 @@
   </div>
 
   <!-- Products -->
-  <section class="products">
-    <!-- Product 1 -->
-    <div class="card">
-      <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium?wid=940&hei=1112&fmt=png-alpha&.v=1693011168092" alt="iPhone 15 Pro">
-      <div class="card-body">
-        <h3>iPhone 15 Pro</h3>
-        <p>Latest iPhone with advanced features</p>
-        <h4>$1099</h4>
-        <span class="stock">39 in stock</span>
-        <button class="cart-btn">🛒 Add to Cart</button>
-      </div>
-    </div>
+  <section class="products" id="products"></section>
 
-    <!-- Product 2 -->
-    <div class="card">
-      <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp16-spacegray-select-202110?wid=904&hei=840&fmt=jpeg&qlt=80&.v=1632799176000" alt="MacBook Pro">
-      <div class="card-body">
-        <h3>MacBook Pro</h3>
-        <p>Powerful laptop for professionals</p>
-        <h4>$3000</h4>
-        <span class="stock">23 in stock</span>
-        <button class="cart-btn">🛒 Add to Cart</button>
+  <!-- Cart -->
+  <section class="products" id="cartSection">
+    <div class="card" style="width:100%">
+      <div class="card-body" id="cartBody">
+        <h3>Your Cart</h3>
+        <div id="cartItems"></div>
+        <h4 id="cartTotal">Total: ₹0.00</h4>
+        <button class="cart-btn" id="checkoutBtn">Checkout</button>
       </div>
     </div>
+  </section>
+  <script>
+    const productsEl = document.getElementById('products');
+    const cartItemsEl = document.getElementById('cartItems');
+    const cartTotalEl = document.getElementById('cartTotal');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    let cartItems = [];
+    let isAuthenticated = false;
 
-    <!-- Product 3 -->
-    <div class="card">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg" alt="Fresh Apples">
-      <div class="card-body">
-        <h3>Fresh Apples</h3>
-        <p>Organic red apples</p>
-        <h4>$2</h4>
-        <span class="stock">58 in stock</span>
-        <button class="cart-btn">🛒 Add to Cart</button>
-      </div>
-    </div>
+    async function loadCart() {
+      try {
+        const response = await fetch('/api/cart');
+        if (response.status === 401) {
+          cartItems = [];
+          renderCart();
+          return;
+        }
+        if (response.ok) {
+          cartItems = await response.json();
+          renderCart();
+        }
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        cartItems = [];
+        renderCart();
+      }
+    }
 
-    <!-- Product 4 -->
-    <div class="card">
-      <img src="https://www.beyours.in/cdn/shop/files/black-classic-shirt.jpg?v=1744815740" alt="Xl black-classic-shirt">
-      <div class="card-body">
-        <h3>Black-classic-shirt</h3>
-        <p>Stretchable and soft fibric shirt</p>
-        <h4>$35</h4>
-        <span class="stock">54 in stock</span>
-        <button class="cart-btn">🛒 Add to Cart</button>
-      </div>
-    </div>
+    function renderCart() {
+      cartItemsEl.innerHTML = '';
+      let total = 0;
+      
+      if (cartItems.length === 0) {
+        cartItemsEl.innerHTML = '<p>Your cart is empty</p>';
+        cartTotalEl.textContent = 'Total: ₹0.00';
+        return;
+      }
+
+      cartItems.forEach(item => {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
+        div.style.marginBottom = '8px';
+        div.style.padding = '8px';
+        div.style.border = '1px solid #ddd';
+        div.style.borderRadius = '4px';
+        
+        const line = item.quantity * item.price;
+        total += line;
+        
+        const statusBadge = getStatusBadge(item.status);
+        
+        div.innerHTML = `
+          <div>
+            <div>${item.name} x${item.quantity}</div>
+            <div style="font-size: 0.8em; color: #666;">${statusBadge}</div>
+          </div>
+          <div>
+            <div>₹${line.toFixed(2)}</div>
+            <button onclick="removeFromCart(${item.id})" style="font-size: 0.7em; padding: 2px 6px;">Remove</button>
+          </div>
+        `;
+        cartItemsEl.appendChild(div);
+      });
+      cartTotalEl.textContent = `Total: ₹${total.toFixed(2)}`;
+    }
+
+    function getStatusBadge(status) {
+      const badges = {
+        'pending': '⏳ Pending Approval',
+        'approved': '✅ Approved',
+        'rejected': '❌ Rejected'
+      };
+      return badges[status] || '⏳ Pending';
+    }
+
+    async function addToCart(prod) {
+      if (!isAuthenticated) {
+        alert('Please login to add items to cart');
+        window.location.href = '/index.html';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            product_id: prod.id,
+            quantity: 1
+          })
+        });
+
+        if (response.status === 401) {
+          alert('Please login to add items to cart');
+          window.location.href = '/index.html';
+          return;
+        }
+
+        if (response.ok) {
+          await loadCart(); // Reload cart after adding
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to add to cart');
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Failed to add to cart');
+      }
+    }
+
+    async function removeFromCart(cartItemId) {
+      try {
+        const response = await fetch(`/api/cart/${cartItemId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          await loadCart(); // Reload cart after removing
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to remove from cart');
+        }
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        alert('Failed to remove from cart');
+      }
+    }
+
+    function renderProducts(products) {
+      productsEl.innerHTML = '';
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const img = document.createElement('img');
+        img.src = p.category === 'Groceries' ? 'https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg' : 'https://via.placeholder.com/300x180?text=' + encodeURIComponent(p.name);
+        img.alt = p.name;
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.innerHTML = `<h3>${p.name}</h3><p>${p.category}</p><h4>₹${Number(p.price).toFixed(2)}</h4><span class="stock">${p.stock} in stock</span>`;
+        const btn = document.createElement('button');
+        btn.className = 'cart-btn';
+        btn.textContent = '🛒 Add to Cart';
+        btn.onclick = () => addToCart(p);
+        body.appendChild(btn);
+        card.appendChild(img);
+        card.appendChild(body);
+        productsEl.appendChild(card);
+      });
+    }
+
+    fetch('/api/products').then(r => r.json()).then(renderProducts);
+
+    // Check authentication status and load cart
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(data => {
+        if (data.authenticated) {
+          isAuthenticated = true;
+          document.getElementById('loginBtn').style.display = 'none';
+          document.getElementById('dashboardBtn').style.display = 'block';
+          loadCart(); // Load cart for authenticated users
+        } else {
+          isAuthenticated = false;
+          document.getElementById('loginBtn').style.display = 'block';
+          document.getElementById('dashboardBtn').style.display = 'none';
+        }
+      })
+      .catch(error => {
+        console.error('Auth check failed:', error);
+      });
+
+    checkoutBtn.onclick = async () => {
+      if (!isAuthenticated) {
+        alert('Please login to place an order');
+        window.location.href = '/index.html';
+        return;
+      }
+
+      // Only allow checkout for approved cart items
+      const approvedItems = cartItems.filter(item => item.status === 'approved');
+      if (approvedItems.length === 0) {
+        alert('No approved items in cart. Please wait for admin approval or contact support.');
+        return;
+      }
+
+      const items = approvedItems.map(i => ({ product_id: i.product_id, quantity: i.quantity }));
+      if (items.length === 0) { 
+        alert('Cart is empty'); 
+        return; 
+      }
+
+      try {
+        const res = await fetch('/api/orders', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ items }) 
+        });
+        const data = await res.json();
+        
+        if (res.status === 401) { 
+          alert('Please login to place an order.'); 
+          window.location.href = 'index.html'; 
+          return; 
+        }
+        
+        if (!res.ok) { 
+          alert(data.message || 'Order failed'); 
+          return; 
+        }
+        
+        alert(`Order placed! Total: ₹${Number(data.total).toFixed(2)}`);
+        
+        // Remove approved items from cart after successful order
+        for (const item of approvedItems) {
+          await fetch(`/api/cart/${item.id}`, { method: 'DELETE' });
+        }
+        
+        await loadCart(); // Reload cart
+      } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Failed to place order');
+      }
+    };
+  </script>
 </body>
 </html>
