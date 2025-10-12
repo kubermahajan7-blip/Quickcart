@@ -13,7 +13,6 @@
       <span class="icon">🛍️</span>
       <h2>QuickCart</h2>
     </div>
-    <!--<button class="login-btn"> <span>👤</span> Login</button>-->
   </nav>
 
   <!-- Register Box -->
@@ -21,29 +20,20 @@
     <div class="login-box">
       <h2>Create an Account</h2>
       <p class="subtitle">Join QuickCart today!</p>
+      <div class="auth-toggle">
+        <a href="index.html" class="auth-btn">Login</a>
+        <a href="register.html" class="auth-btn active">Register</a>
+      </div>
       
-      <form>
-        <label>Full Name</label>
-        <input type="text" placeholder="Enter your full name" required>
+      <form action="/register" method="POST">
+  <input type="text" name="name" placeholder="Full Name" required />
+  <input type="email" name="email" placeholder="Email" required />
+  <input type="password" name="password" placeholder="Password" required />
+  <button type="submit" class="submit-btn">Register</button>
+</form>
 
-        <label>Email</label>
-        <input type="email" placeholder="Enter your email" required>
-
-        <label>Password</label>
-        <input type="password" placeholder="Create a password" required>
-
-        <label>Confirm Password</label>
-        <input type="password" placeholder="Confirm your password" required>
-
-        <button type="submit" class="submit-btn">Register</button>
-      </form>
-
-      <p class="register">
-        Already have an account? <a href="index.html">Login here</a>
-      </p>
+      
     </div>
   </div>
 </body>
 </html>
-
-
