@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickCart - Customer Dashboard</title>
+  <link rel="stylesheet" href="customer-dashboard.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">
+      <span class="icon">🛍️</span>
+      <h2>QuickCart</h2>
+    </div>
+    <div class="nav-right">
+      <span id="userGreeting">Hello, Customer</span>
+      <button class="shop-btn" onclick="window.location.href='/home.html'">🛒 Shop</button>
+      <button class="logout-btn">↪ Logout</button>
+    </div>
+  </nav>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" onclick="showTab('cart')">My Cart</button>
+    <button class="tab-btn" onclick="showTab('pending')">Pending Orders</button>
+    <button class="tab-btn" onclick="showTab('history')">Order History</button>
+    <button class="tab-btn" onclick="showTab('profile')">Profile</button>
+  </div>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="tab-content active">
+    <h2>My Dashboard</h2>
+    <div class="stats">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-content">
+          <h3 id="totalOrders">0</h3>
+          <p>Total Orders</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏳</div>
+        <div class="card-content">
+          <h3 id="pendingOrders">0</h3>
+          <p>Pending Orders</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <div class="card-content">
+          <h3 id="deliveredOrders">0</h3>
+          <p>Delivered Orders</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3 id="totalSpent">₹0</h3>
+          <p>Total Spent</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛒</div>
+        <div class="card-content">
+          <h3 id="cartItems">0</h3>
+          <p>Cart Items</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏳</div>
+        <div class="card-content">
+          <h3 id="pendingCartItems">0</h3>
+          <p>Pending Approval</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="performance">
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <div id="recentActivity">
+          <p>Loading recent activity...</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Quick Actions</h3>
+        <div class="quick-actions">
+          <button class="action-btn" onclick="window.location.href='/home.html'">
+            🛒 Start Shopping
+          </button>
+          <button class="action-btn" onclick="showTab('pending')">
+            ⏳ View Pending Orders
+          </button>
+          <button class="action-btn" onclick="showTab('history')">
+            📋 Order History
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart -->
+  <section id="cart" class="tab-content">
+    <h2>My Cart</h2>
+    <div class="cart-summary">
+      <div class="card">
+        <h3>Cart Summary</h3>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span>Total Items:</span>
+            <span id="cartTotalItems">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Pending Approval:</span>
+            <span id="cartPendingItems">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Approved Items:</span>
+            <span id="cartApprovedItems">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Cart Value:</span>
+            <span id="cartValue">₹0.00</span>
+          </div>
+        </div>
+        <button class="action-btn" onclick="window.location.href='/home.html'">
+          🛒 Continue Shopping
+        </button>
+      </div>
+    </div>
+    <div class="cart-items-container">
+      <div id="cartItemsList">
+        <p>Loading cart items...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pending Orders -->
+  <section id="pending" class="tab-content">
+    <h2>Pending Orders</h2>
+    <div class="orders-container">
+      <div id="pendingOrdersList">
+        <p>Loading pending orders...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order History -->
+  <section id="history" class="tab-content">
+    <h2>Order History</h2>
+    <div class="filter-section">
+      <select id="statusFilter" onchange="filterOrders()">
+        <option value="all">All Orders</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="shipped">Shipped</option>
+        <option value="delivered">Delivered</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="orders-container">
+      <div id="orderHistoryList">
+        <p>Loading order history...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Profile -->
+  <section id="profile" class="tab-content">
+    <h2>My Profile</h2>
+    <div class="profile-container">
+      <div class="card">
+        <h3>Account Information</h3>
+        <div class="profile-info">
+          <div class="info-item">
+            <label>Name:</label>
+            <span id="userName">Loading...</span>
+          </div>
+          <div class="info-item">
+            <label>Email:</label>
+            <span id="userEmail">Loading...</span>
+          </div>
+          <div class="info-item">
+            <label>Member Since:</label>
+            <span id="memberSince">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Account Settings</h3>
+        <div class="settings">
+          <button class="action-btn" onclick="changePassword()">
+            🔒 Change Password
+          </button>
+          <button class="action-btn" onclick="updateProfile()">
+            ✏️ Update Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order Details Modal -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeOrderModal()">&times;</span>
+      <h3 id="modalOrderTitle">Order Details</h3>
+      <div id="modalOrderContent">
+        <!-- Order details will be populated here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    let dashboardData = null;
+    let currentUser = null;
+
+    // Tab functionality
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load data when switching tabs
+      if (tabId === 'cart') {
+        loadCartItems();
+      } else if (tabId === 'pending') {
+        loadPendingOrders();
+      } else if (tabId === 'history') {
+        loadOrderHistory();
+      } else if (tabId === 'profile') {
+        loadProfile();
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const response = await fetch('/api/customer/dashboard');
+        if (response.status === 401) {
+          window.location.href = '/index.html';
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to load dashboard');
+        }
+        
+        dashboardData = await response.json();
+        updateDashboardStats();
+        updateRecentActivity();
+        updateUserGreeting();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        document.getElementById('recentActivity').innerHTML = '<p>Error loading dashboard data</p>';
+      }
+    }
+
+    // Update dashboard statistics
+    function updateDashboardStats() {
+      const stats = dashboardData.stats;
+      const cartStats = dashboardData.cart_stats;
+      
+      document.getElementById('totalOrders').textContent = stats.total_orders || 0;
+      document.getElementById('pendingOrders').textContent = stats.pending_orders || 0;
+      document.getElementById('deliveredOrders').textContent = stats.delivered_orders || 0;
+      document.getElementById('totalSpent').textContent = `₹${(stats.total_spent || 0).toFixed(2)}`;
+      document.getElementById('cartItems').textContent = cartStats.total_cart_items || 0;
+      document.getElementById('pendingCartItems').textContent = cartStats.pending_cart_items || 0;
+    }
+
+    // Update recent activity
+    function updateRecentActivity() {
+      const recentOrders = dashboardData.orders.slice(0, 3);
+      const activityHtml = recentOrders.map(order => {
+        const statusClass = getStatusClass(order.status);
+        const date = new Date(order.created_at).toLocaleDateString();
+        return `
+          <div class="activity-item">
+            <span class="activity-icon ${statusClass}">${getStatusIcon(order.status)}</span>
+            <div class="activity-content">
+              <p>Order #${order.id} - ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</p>
+              <small>${date} - ₹${Number(order.total_amount).toFixed(2)}</small>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('recentActivity').innerHTML = 
+        activityHtml || '<p>No recent activity</p>';
+    }
+
+    // Update user greeting
+    function updateUserGreeting() {
+      if (currentUser) {
+        document.getElementById('userGreeting').textContent = `Hello, ${currentUser.name}`;
+      }
+    }
+
+    // Load pending orders
+    async function loadPendingOrders() {
+      const pendingOrders = dashboardData.orders.filter(order => 
+        order.status === 'pending' || order.status === 'approved'
+      );
+      
+      if (pendingOrders.length === 0) {
+        document.getElementById('pendingOrdersList').innerHTML = 
+          '<div class="no-orders"><p>No pending orders</p></div>';
+        return;
+      }
+
+      const ordersHtml = pendingOrders.map(order => createOrderCard(order)).join('');
+      document.getElementById('pendingOrdersList').innerHTML = ordersHtml;
+    }
+
+    // Load order history
+    async function loadOrderHistory() {
+      const ordersHtml = dashboardData.orders.map(order => createOrderCard(order)).join('');
+      document.getElementById('orderHistoryList').innerHTML = ordersHtml;
+    }
+
+    // Load cart items
+    async function loadCartItems() {
+      const cartItems = dashboardData.cart_items || [];
+      
+      // Update cart summary
+      const cartStats = dashboardData.cart_stats || {};
+      document.getElementById('cartTotalItems').textContent = cartStats.total_cart_items || 0;
+      document.getElementById('cartPendingItems').textContent = cartStats.pending_cart_items || 0;
+      document.getElementById('cartApprovedItems').textContent = cartStats.approved_cart_items || 0;
+      document.getElementById('cartValue').textContent = `₹${(cartStats.cart_total_value || 0).toFixed(2)}`;
+      
+      if (cartItems.length === 0) {
+        document.getElementById('cartItemsList').innerHTML = 
+          '<div class="no-orders"><p>Your cart is empty</p></div>';
+        return;
+      }
+
+      const cartHtml = cartItems.map(item => createCartItemCard(item)).join('');
+      document.getElementById('cartItemsList').innerHTML = cartHtml;
+    }
+
+    // Create cart item card
+    function createCartItemCard(item) {
+      const statusClass = getStatusClass(item.status);
+      const date = new Date(item.created_at).toLocaleDateString();
+      const total = item.quantity * item.price;
+      
+      return `
+        <div class="order-card">
+          <div class="order-header">
+            <h4>${item.name}</h4>
+            <span class="status-badge ${statusClass}">
+              ${getStatusIcon(item.status)} ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+            </span>
+          </div>
+          <div class="order-details">
+            <p><strong>Category:</strong> ${item.category}</p>
+            <p><strong>Quantity:</strong> ${item.quantity}</p>
+            <p><strong>Price:</strong> ₹${Number(item.price).toFixed(2)} each</p>
+            <p><strong>Total:</strong> ₹${total.toFixed(2)}</p>
+            <p><strong>Added:</strong> ${date}</p>
+          </div>
+          <div class="cart-actions">
+            <button class="action-btn" onclick="updateCartQuantity(${item.id}, ${item.quantity - 1})" 
+                    ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+            <span style="margin: 0 10px;">${item.quantity}</span>
+            <button class="action-btn" onclick="updateCartQuantity(${item.id}, ${item.quantity + 1})">+</button>
+            <button class="action-btn delete" onclick="removeFromCart(${item.id})">Remove</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Update cart quantity
+    async function updateCartQuantity(cartItemId, newQuantity) {
+      if (newQuantity < 0) return;
+      
+      try {
+        const response = await fetch(`/api/cart/${cartItemId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ quantity: newQuantity })
+        });
+
+        if (response.ok) {
+          await loadDashboard(); // Reload dashboard data
+          loadCartItems(); // Reload cart items
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to update cart');
+        }
+      } catch (error) {
+        console.error('Error updating cart:', error);
+        alert('Failed to update cart');
+      }
+    }
+
+    // Remove from cart
+    async function removeFromCart(cartItemId) {
+      if (!confirm('Are you sure you want to remove this item from your cart?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/cart/${cartItemId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          await loadDashboard(); // Reload dashboard data
+          loadCartItems(); // Reload cart items
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to remove from cart');
+        }
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        alert('Failed to remove from cart');
+      }
+    }
+
+    // Create order card
+    function createOrderCard(order) {
+      const statusClass = getStatusClass(order.status);
+      const date = new Date(order.created_at).toLocaleDateString();
+      const items = order.items.map(item => 
+        `${item.name} x${item.quantity}`
+      ).join(', ');
+      
+      return `
+        <div class="order-card" onclick="showOrderDetails(${order.id})">
+          <div class="order-header">
+            <h4>Order #${order.id}</h4>
+            <span class="status-badge ${statusClass}">
+              ${getStatusIcon(order.status)} ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            </span>
+          </div>
+          <div class="order-details">
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Items:</strong> ${items}</p>
+            <p><strong>Total:</strong> ₹${Number(order.total_amount).toFixed(2)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Show order details modal
+    function showOrderDetails(orderId) {
+      const order = dashboardData.orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const itemsHtml = order.items.map(item => `
+        <div class="order-item">
+          <span>${item.name}</span>
+          <span>Qty: ${item.quantity}</span>
+          <span>₹${Number(item.price_each).toFixed(2)} each</span>
+          <span>₹${(Number(item.price_each) * item.quantity).toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('modalOrderTitle').textContent = `Order #${order.id}`;
+      document.getElementById('modalOrderContent').innerHTML = `
+        <div class="order-info">
+          <p><strong>Status:</strong> <span class="status-badge ${getStatusClass(order.status)}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></p>
+          <p><strong>Order Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
+          <p><strong>Last Updated:</strong> ${new Date(order.updated_at).toLocaleString()}</p>
+          <p><strong>Total Amount:</strong> ₹${Number(order.total_amount).toFixed(2)}</p>
+        </div>
+        <div class="order-items">
+          <h4>Items:</h4>
+          <div class="items-list">
+            ${itemsHtml}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('orderModal').style.display = 'block';
+    }
+
+    // Close order modal
+    function closeOrderModal() {
+      document.getElementById('orderModal').style.display = 'none';
+    }
+
+    // Filter orders by status
+    function filterOrders() {
+      const filter = document.getElementById('statusFilter').value;
+      const orders = dashboardData.orders;
+      
+      let filteredOrders = orders;
+      if (filter !== 'all') {
+        filteredOrders = orders.filter(order => order.status === filter);
+      }
+      
+      const ordersHtml = filteredOrders.map(order => createOrderCard(order)).join('');
+      document.getElementById('orderHistoryList').innerHTML = ordersHtml;
+    }
+
+    // Load profile information
+    async function loadProfile() {
+      if (currentUser) {
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        document.getElementById('memberSince').textContent = 'Recently joined';
+      }
+    }
+
+    // Utility functions
+    function getStatusClass(status) {
+      const classes = {
+        'pending': 'status-pending',
+        'approved': 'status-approved',
+        'shipped': 'status-shipped',
+        'delivered': 'status-delivered',
+        'rejected': 'status-rejected'
+      };
+      return classes[status] || 'status-pending';
+    }
+
+    function getStatusIcon(status) {
+      const icons = {
+        'pending': '⏳',
+        'approved': '✅',
+        'shipped': '🚚',
+        'delivered': '📦',
+        'rejected': '❌'
+      };
+      return icons[status] || '⏳';
+    }
+
+    // Profile actions
+    function changePassword() {
+      alert('Change password functionality will be implemented');
+    }
+
+    function updateProfile() {
+      alert('Update profile functionality will be implemented');
+    }
+
+    // Logout functionality
+    document.querySelector('.logout-btn').addEventListener('click', async () => {
+      try {
+        await fetch('/logout');
+        window.location.href = '/index.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/index.html';
+      }
+    });
+
+    // Check authentication and load data
+    async function init() {
+      try {
+        const authResponse = await fetch('/api/auth/me');
+        const authData = await authResponse.json();
+        
+        if (!authData.authenticated) {
+          window.location.href = '/index.html';
+          return;
+        }
+        
+        currentUser = authData.user;
+        await loadDashboard();
+      } catch (error) {
+        console.error('Initialization error:', error);
+        window.location.href = '/index.html';
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', init);
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('orderModal');
+      if (event.target === modal) {
+        closeOrderModal();
+      }
+    }
+  </script>
+</body>
+</html>
