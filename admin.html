@@ -1,165 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickCart - Admin</title>
-  <link rel="stylesheet" href="admin.css">
 
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <title>E-commerce Website</title>
+
+  <style>
+    nav{
+      background-color: green;
+    }
+    .one-edge-shadow {
+              box-shadow: 0 8px 2px -5px rgb(246, 245, 245);
+}
+.display-8{
+  font-weight: 200;
+  font-size: 30px;
+  font-colour: $teal-200;
+}
+  </style>
 </head>
+
 <body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="logo">
-      <span class="icon">🛍️</span>
-      <h2>QuickCart</h2>
-    </div>
-    <div class="nav-right">
-      <span id="adminGreeting">Hello, admin</span>
-      <button class="admin-btn">Admin</button>
-      <button class="logout-btn">Logout</button>
+  <!-- navbar -->
+
+<nav class="one-edge-shadow
+  navbar navbar-light
+  sticky-top navbar 
+  navbar-expand-lg
+  text-white">
+    <a class="navbar-brand ms-3 text-dark " href="/">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <img src="https://www.freepnglogos.com/uploads/shopping-cart-png/shopping-cart-svg-png-icon-download-28.png" style="width:50px;height:50px,color:text-light;">E-Commerce</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/store">Store <span class="sr-only">(current)</span></a>
+        </li>
+
+          </ul>
+
+
+
+
+      <ul class=" navbar-nav my-2 my-lg-0">
+
+        <li class="nav-item active">
+          <a class="nav-link" href="/cart">Cart 
+            <span class="badge badge-success">{{request.session.cart.keys|length}}</span>
+            <span class="sr-only">(current)</span></a>
+        </li>
+
+        {% if request.session.customer %}
+        
+        <li class="nav-item active ">
+          <a class="nav-link" href="/orders">Orders<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active ">
+          <a class="nav-link" href="/logout">Logout<span class="sr-only">(current)</span></a>
+        </li>
+        {% else %}
+       
+        <li class="nav-item active">
+          <a class="nav-link" href="/signup">Signup<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/login">Login<span class="sr-only">(current)</span></a>
+        </li>
+        {% endif %}
+
+
+      </ul>
+
+
     </div>
   </nav>
+  <!---->
+  {% block content %}{% endblock %}
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('dashboard')">Dashboard</button>
-    <button class="tab-btn" onclick="showTab('products')">Products</button>
-    <button class="tab-btn" onclick="showTab('carts')">Cart Management</button>
-    <button class="tab-btn" onclick="showTab('customers')">Customers</button>
-    <button class="tab-btn" onclick="showTab('orders')">Orders</button>
-    <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
-  </div>
-
-  <!-- Dashboard -->
-  <section id="dashboard" class="tab-content active">
-    <h2>Admin Dashboard</h2>
-    <div class="stats">
-      <div class="card">📦 Total Products <h3 id="totalProducts">0</h3></div>
-      <div class="card">👥 Total Customers <h3 id="totalCustomers">0</h3></div>
-      <div class="card">🧾 Total Orders <h3 id="totalOrders">0</h3></div>
-      <div class="card">💰 Total Revenue <h3 id="totalRevenue">₹0</h3></div>
-      <div class="card">✅ Delivered Revenue <h3 id="deliveredRevenue">₹0</h3></div>
-      <div class="card">🛒 Cart Items <h3 id="totalCartItems">0</h3></div>
-      <div class="card">⏳ Pending Cart Items <h3 id="pendingCartItems">0</h3></div>
-      <div class="card">⚠️ Low Stock <h3 id="lowStock">0</h3></div>
-    </div>
-
-    <div class="performance">
-      <div class="card">
-        <h3>Today's Performance</h3>
-        <p>Orders Today: <span id="ordersToday">0</span></p>
-        <p>Revenue Today: ₹<span id="revenueToday">0.00</span></p>
-        <p>Pending Orders: <span id="pendingOrders">0</span></p>
-        <p>Approved Orders: <span id="approvedOrders">0</span></p>
-        <p>Delivered Orders: <span id="deliveredOrders">0</span></p>
-      </div>
-      <div class="card">
-        <h3>Cart Management</h3>
-        <p>Total Cart Items: <span id="cartItemsCount">0</span></p>
-        <p>Pending Approval: <span id="pendingCartCount">0</span></p>
-        <p>Approved Items: <span id="approvedCartCount">0</span></p>
-        <p>Cart Total Value: ₹<span id="cartTotalValue">0.00</span></p>
-      </div>
-      <div class="card">
-        <h3>Top Selling Products</h3>
-        <div id="topProducts">
-          <p>Loading...</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Products -->
-  <section id="products" class="tab-content">
-    <h2>Product Management</h2>
-    <button class="add-btn">➕ Add Product</button>
-    <div class="products-grid">
-      <div class="card">
-        <h3>iPhone 15 Pro</h3>
-        <p>&#8377;90000 — 39 in stock</p>
-        <button>Edit</button>
-        <button class="delete">🗑 Delete</button>
-      </div>
-      <div class="card">
-        <h3>MacBook Pro</h3>
-        <p>&#8377;140000 — 23 in stock</p>
-        <button>Edit</button>
-        <button class="delete">🗑 Delete</button>
-      </div>
-      <div class="card">
-        <h3>Fresh Apples</h3>
-        <p>&#8377;150 — 99 in stock</p>
-        <button>Edit</button>
-        <button class="delete">🗑 Delete</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Cart Management -->
-  <section id="carts" class="tab-content">
-    <h2>Cart Management</h2>
-    <div class="filter-section">
-      <select id="cartStatusFilter" onchange="filterCarts()">
-        <option value="all">All Cart Items</option>
-        <option value="pending">Pending Approval</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-      </select>
-    </div>
-    <div id="cartsList">
-      <p>Loading cart items...</p>
-    </div>
-  </section>
-
-  <!-- Customer Management -->
-  <section id="customers" class="tab-content">
-    <h2>Customer Management</h2>
-    <div id="customersList">
-      <p>Loading customers...</p>
-    </div>
-  </section>
-
-  <!-- Orders -->
-  <section id="orders" class="tab-content">
-    <h2>Order Management</h2>
-    <div id="ordersList">
-      <p>Loading orders...</p>
-    </div>
-  </section>
-
-  <!-- Analytics -->
-  <section id="analytics" class="tab-content">
-    <h2>Analytics</h2>
-    <p>Charts and reports will be added here 📊</p>
-  </section>
-
-  <!-- JS -->
-  <script>
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
-    }
-
-    // Update admin greeting
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(data => {
-        if (data.authenticated && data.user.role === 'admin') {
-          document.getElementById('adminGreeting').textContent = `Hello, ${data.user.name}`;
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching user data:', error);
-      });
-  </script>
-  <script src="admin.js"></script>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
 </body>
-</html>
 
+</html>
