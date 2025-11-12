@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Cash and Bank Module</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600|Roboto:400,500|Montserrat:400,500" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+  <!-- jQuery (required by Select2) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <style>
+    body {
+      margin:0; font-family:'Poppins',sans-serif; background:#f4f6f8; color:#333;
+    }
+    h1 { margin:0; font-weight:600; font-size:1.8rem; }
+    h2 { margin:0; font-weight:400; color:#555; }
+
+    .container { padding:20px; }
+    .flex { display:flex; align-items:center; }
+    .flex-space { justify-content:space-between; }
+
+    button, .btn {
+      background:#008b8b; color:#fff; border:none;
+      padding:8px 14px; margin:0 5px; border-radius:4px;
+      cursor:pointer; font-family:'Roboto',sans-serif; font-size:0.9rem;
+    }
+    button:hover { background:#006f6f; }
+    .btn-clear { background:#ccc; color:#333; }
+
+    input, select {
+      padding:6px 10px; border-radius:4px; border:1px solid #ccc;
+      font-size:0.9rem;
+    }
+
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th, td {
+      padding:8px; border:1px solid #e2e2e2;
+      font-size:0.9rem; white-space:nowrap;
+    }
+    th { background:#e8f7f7; position:sticky; top:0; z-index:2; }
+
+    /* Overlay & Modal */
+    .modal-overlay {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.4); display:none;
+      align-items:center; justify-content:center; z-index:9999;
+    }
+    .modal {
+      background:#fff; border-radius:6px;
+      width:90vw; max-height:90vh; overflow:auto;
+      padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal-header { margin-bottom:15px; }
+    .modal-footer { text-align:right; margin-top:15px; }
+
+    /* Processing overlay */
+    #rcProcessing {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(255,255,255,0.7); display:none;
+      align-items:center; justify-content:center; z-index:10000;
+      font-size:1.2rem; color:#008b8b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Title -->
+    <div id="rcHeader" class="flex-space">
+      <div>
+        <h1>Cash and Bank Module</h1>
+        <h2>Create Receipts and Payments</h2>
+      </div>
+      <button id="rcBtnNew"><i class="fa fa-plus"></i> New Receipt</button>
+    </div>
+
+    <!-- Nav & Search -->
+    <div class="flex-space">
+      <div></div>
+      <div class="flex">
+        <select id="rcSearchCrit">
+          <option>All</option>
+          <option>SO ID</option>
+          <option>Customer Name</option>
+          <option>Invoice Num</option>
+          <option>PMT Mode</option>
+        </select>
+        <input type="text" id="rcSearchInput" placeholder="Search...">
+        <button id="rcBtnSearch">Search</button>
+        <button class="btn-clear" id="rcBtnClear">Clear</button>
+      </div>
+    </div>
+
+    <!-- Receipt List Table -->
+    <table id="rcList">
+      <thead>
+        <tr>
+          <th>Trx Date</th><th>Trx ID</th><th>Customer ID</th><th>Customer Name</th>
+          <th>State</th><th>City</th><th>SO ID</th><th>Invoice Num</th>
+          <th>PMT Mode</th><th>Amount Received</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Processing Overlay -->
+  <div id="rcProcessing"><i class="fa fa-spinner fa-pulse"></i> Processing...</div>
+
+  <!-- Modal Overlay -->
+  <div id="rcModalOverlay" class="modal-overlay">
+    <div class="modal" id="rcModal">
+      <div class="modal-header"><h2 id="rcModalTitle"></h2></div>
+      <div class="modal-body" id="rcModalBody"></div>
+      <div class="modal-footer" id="rcModalFooter"></div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let rcReceipts = [];
+    let rcCustomers = [];
+    let rcSalesOrders = [];
+    let rcDimensions = [];
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      rcRefreshList();
+      google.script.run.withSuccessHandler(data => rcCustomers = data).rcGetCustomers();
+      google.script.run.withSuccessHandler(data => rcSalesOrders = data).rcGetSalesOrders();
+      google.script.run.withSuccessHandler(data => rcDimensions  = data).rcGetDimensions();
+
+      document.getElementById('rcBtnNew').onclick    = openNewReceipt;
+      document.getElementById('rcBtnSearch').onclick = doSearch;
+      document.getElementById('rcBtnClear').onclick  = clearSearch;
+    });
+
+    // Refresh receipt list
+    function rcRefreshList() {
+      showProcessing();
+      google.script.run
+        .withSuccessHandler(renderList)
+        .withFailureHandler(hideProcessing)
+        .rcGetAllReceipts();
+    }
+
+    function renderList(rows) {
+      hideProcessing();
+      rcReceipts = rows;
+      const tbody = document.querySelector('#rcList tbody');
+      tbody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r['Trx Date']}</td>
+          <td>${r['Trx ID']}</td>
+          <td>${r['Customer ID']}</td>
+          <td>${r['Customer Name']}</td>
+          <td>${r['State']}</td>
+          <td>${r['City']}</td>
+          <td>${r['SO ID']}</td>
+          <td>${r['Invoice Num']}</td>
+          <td>${r['PMT Mode']}</td>
+          <td>${parseFloat(r['Amount Received']).toFixed(2)}</td>
+          <td>
+            <button class="btn" onclick="openEditReceipt('${r['Trx ID']}')">Edit</button>
+            <button class="btn-clear" onclick="deleteReceipt('${r['Trx ID']}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Search / Clear
+    function doSearch() {
+      const crit = document.getElementById('rcSearchCrit').value;
+      const val  = document.getElementById('rcSearchInput').value.toLowerCase();
+      if (crit==='All' || !val) return renderList(rcReceipts);
+      const filtered = rcReceipts.filter(r => 
+        (''+r[crit]).toLowerCase().includes(val)
+      );
+      if (!filtered.length) alert('No matching data found');
+      renderList(filtered);
+    }
+    function clearSearch() {
+      document.getElementById('rcSearchInput').value='';
+      document.getElementById('rcSearchCrit').value='All';
+      renderList(rcReceipts);
+    }
+
+    // Show / hide processing
+    function showProcessing() { document.getElementById('rcProcessing').style.display='flex'; }
+    function hideProcessing() { document.getElementById('rcProcessing').style.display='none'; }
+
+    // Open New Receipt form
+    function openNewReceipt() {
+      showModal('New Receipt', rcFormBody(), rcFormFooter('Save','rcSaveReceipt()'));
+      initFormElements(true);
+    }
+
+    // HTML for form body
+    function rcFormBody() {
+      return `
+      <div class="flex-space">
+        <div style="flex:1; padding-right:10px;">
+          <label>Trx Date</label><br>
+          <input type="date" id="rcTrxDate"><br><br>
+
+          <label>Trx ID</label><br>
+          <input type="text" id="rcTrxID" readonly style="width:70%">
+          <button class="btn" onclick="rcGenTrxID()">Generate</button><br><br>
+
+          <label>Customer Name</label><br>
+          <select id="rcCustomerName" style="width:100%"></select><br><br>
+
+          <label>State</label><br>
+          <input type="text" id="rcState" readonly><br><br>
+
+          <label>City</label><br>
+          <input type="text" id="rcCity" readonly><br><br>
+
+          <label>Customer ID</label><br>
+          <input type="text" id="rcCustomerID" readonly><br><br>
+        </div>
+        <div style="flex:1; padding-left:10px">
+          <label>SO ID</label><br>
+          <select id="rcSOID" style="width:100%"></select><br><br>
+
+          <label>Invoice Num</label><br>
+          <select id="rcInvoiceNum" style="width:100%"></select><br><br>
+
+          <label>SO Balance</label><br>
+          <input type="text" id="rcSOBalance" readonly><br><br>
+
+          <label>PMT Mode</label><br>
+          <select id="rcPMTMode" style="width:100%"></select><br><br>
+
+          <label>Amount Received</label><br>
+          <input type="number" id="rcAmount" step="0.01" placeholder="0.00"><br>
+        </div>
+      </div>`;
+    }
+
+    // Generic form footer
+    function rcFormFooter(btnText, onClick) {
+      return `
+        <button class="btn" onclick="${onClick}">${btnText}</button>
+        <button class="btn-clear" onclick="closeModal()">Close</button>
+      `;
+    }
+
+    // Show modal
+    function showModal(title, body, footer) {
+      document.getElementById('rcModalTitle').innerText = title;
+      document.getElementById('rcModalBody').innerHTML  = body;
+      document.getElementById('rcModalFooter').innerHTML= footer;
+      document.getElementById('rcModalOverlay').style.display = 'flex';
+      initSelect2();  // global init
+    }
+    function closeModal() {
+      document.getElementById('rcModalOverlay').style.display='none';
+    }
+
+    // Initialize all select2 in form
+    function initSelect2() {
+      $('#rcCustomerName').select2({ placeholder:'Select Customer', dropdownParent:$('#rcModal') })
+        .on('change', onCustomerChange);
+      $('#rcSOID').select2({ placeholder:'Select SO ID', dropdownParent:$('#rcModal') })
+        .on('change', onSOChange);
+      $('#rcInvoiceNum').select2({ placeholder:'Select Invoice', dropdownParent:$('#rcModal') });
+      $('#rcPMTMode').select2({ placeholder:'Payment Mode', dropdownParent:$('#rcModal') });
+    }
+
+    // Initialize form elements (for both New & Edit)
+    function initFormElements(isNew) {
+      // Populate Customer dropdown
+      const custSel = document.getElementById('rcCustomerName');
+      custSel.innerHTML = '<option></option>';
+      rcCustomers.filter(c=>c['Customer Name'])
+        .forEach(c=>{
+          const opt=new Option(c['Customer Name'],c['Customer Name']);
+          custSel.add(opt);
+        });
+
+      // Populate PMT Mode
+      const pmSel = document.getElementById('rcPMTMode');
+      pmSel.innerHTML = '<option></option>';
+      rcDimensions.filter(d=>d['PMT Mode'])
+        .map(d=>d['PMT Mode'])
+        .filter((v,i,self)=>self.indexOf(v)===i)
+        .forEach(v=>pmSel.add(new Option(v,v)));
+
+      if (!isNew) return;
+
+      // Clear form
+      ['rcTrxDate','rcTrxID','rcState','rcCity','rcCustomerID','rcSOID',
+       'rcInvoiceNum','rcSOBalance','rcAmount'].forEach(id=>{
+         document.getElementById(id).value = '';
+       });
+    }
+
+    // Generate unique Trx ID
+    function rcGenTrxID() {
+      showProcessing();
+      google.script.run.withSuccessHandler(id=>{
+        document.getElementById('rcTrxID').value = id;
+        hideProcessing();
+      }).rcGenerateTrxID();
+    }
+
+    // When Customer changes, auto-fill ID/State/City, populate SO and Invoice lists
+    function onCustomerChange() {
+      const name = this.value;
+      const cust = rcCustomers.find(c=>c['Customer Name']===name) || {};
+      document.getElementById('rcCustomerID').value = cust['Customer ID']||'';
+      document.getElementById('rcState').value      = cust['State']||'';
+      document.getElementById('rcCity').value       = cust['City']||'';
+
+      // Populate SO ID dropdown
+      const soSel = $('#rcSOID');
+      soSel.empty().append('<option></option>');
+      rcSalesOrders
+        .filter(o=>o['Customer ID']===cust['Customer ID'])
+        .forEach(o=>soSel.append(new Option(o['SO ID'], o['SO ID'])));
+      soSel.trigger('change');
+    }
+
+    // When SO ID changes, auto-fill Invoice & SO Balance
+    function onSOChange() {
+      const soID = this.value;
+      const order = rcSalesOrders.find(o=>o['SO ID']===soID)||{};
+      $('#rcInvoiceNum').empty().append('<option></option>')
+        .append(new Option(order['Invoice Num'], order['Invoice Num']))
+        .trigger('change');
+      document.getElementById('rcSOBalance').value = order['SO Balance']||'';
+    }
+
+    // Save new receipt
+    function rcSaveReceipt() {
+      const trxDate = document.getElementById('rcTrxDate').value;
+      const trxID   = document.getElementById('rcTrxID').value;
+      const custID  = document.getElementById('rcCustomerID').value;
+      const custNm  = $('#rcCustomerName').val();
+      const state   = document.getElementById('rcState').value;
+      const city    = document.getElementById('rcCity').value;
+      const soID    = $('#rcSOID').val();
+      const inv     = $('#rcInvoiceNum').val();
+      const mode    = $('#rcPMTMode').val();
+      const amt     = parseFloat(document.getElementById('rcAmount').value);
+
+      // Validation
+      if (!trxDate||!trxID||!custNm||!soID||!inv||!mode||isNaN(amt)) {
+        alert('Please fill all required fields.');
+        return;
+      }
+      const soBal = parseFloat(document.getElementById('rcSOBalance').value)||0;
+      if (amt > soBal) {
+        alert('Amount received is more than SO Balance');
+        return;
+      }
+
+      showProcessing();
+      google.script.run
+        .withSuccessHandler(()=>{
+          alert('New Receipt Saved');
+          closeModal();
+          rcRefreshList();
+          hideProcessing();
+        })
+        .rcSaveNewReceipt({
+          'Trx Date': trxDate,
+          'Trx ID': trxID,
+          'Customer ID': custID,
+          'Customer Name': custNm,
+          'State': state,
+          'City': city,
+          'SO ID': soID,
+          'Invoice Num': inv,
+          'PMT Mode': mode,
+          'Amount Received': amt
+        });
+    }
+
+    // Edit existing receipt
+    function openEditReceipt(trxID) {
+      // Find the record
+      const rec = rcReceipts.find(r=>r['Trx ID']===trxID);
+      if (!rec) return;
+
+      showModal('Edit Receipt', rcFormBody(), rcFormFooter('Update','rcUpdateReceipt()'));
+      initFormElements(false);
+
+      // Prefill
+      document.getElementById('rcTrxDate').value     = rec['Trx Date'];
+      document.getElementById('rcTrxID').value       = rec['Trx ID'];
+      $('#rcCustomerName').append(new Option(rec['Customer Name'],rec['Customer Name'],true,true))
+        .trigger('change');
+      $('#rcSOID').append(new Option(rec['SO ID'],rec['SO ID'],true,true))
+        .trigger('change');
+      $('#rcInvoiceNum').append(new Option(rec['Invoice Num'],rec['Invoice Num'],true,true))
+        .trigger('change');
+      $('#rcPMTMode').append(new Option(rec['PMT Mode'],rec['PMT Mode'],true,true))
+        .trigger('change');
+      document.getElementById('rcAmount').value     = parseFloat(rec['Amount Received']).toFixed(2);
+    }
+
+    // Update receipt
+    function rcUpdateReceipt() {
+      const payload = {
+        'Trx Date': document.getElementById('rcTrxDate').value,
+        'Trx ID':   document.getElementById('rcTrxID').value,
+        'Customer ID': document.getElementById('rcCustomerID').value,
+        'Customer Name': $('#rcCustomerName').val(),
+        'State': document.getElementById('rcState').value,
+        'City':  document.getElementById('rcCity').value,
+        'SO ID': $('#rcSOID').val(),
+        'Invoice Num': $('#rcInvoiceNum').val(),
+        'PMT Mode': $('#rcPMTMode').val(),
+        'Amount Received': parseFloat(document.getElementById('rcAmount').value)
+      };
+      showProcessing();
+      google.script.run
+        .withSuccessHandler(()=>{
+          alert('Receipt Updated');
+          closeModal();
+          rcRefreshList();
+          hideProcessing();
+        })
+        .rcUpdateReceipt(payload);
+    }
+
+    // Delete receipt
+    function deleteReceipt(trxID) {
+      if (!confirm('Delete this receipt?')) return;
+      showProcessing();
+      google.script.run
+        .withSuccessHandler(()=>{
+          alert('Receipt Deleted');
+          rcRefreshList();
+          hideProcessing();
+        })
+        .rcDeleteReceipt(trxID);
+    }
+  </script>
+</body>
+</html>

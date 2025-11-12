@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Payments Module</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600|Roboto:400,500|Montserrat:400,500" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+  <!-- jQuery & Select2 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <style>
+    body { margin:0; font-family:Poppins,sans-serif; background:#f4f6f8; color:#333; }
+    h1 { margin:0; font-weight:600; font-size:1.8rem; }
+    h2 { margin:0; font-weight:400; color:#555; }
+    .container { padding:20px; }
+    .flex { display:flex; align-items:center; }
+    .flex-space { display:flex; align-items:center; justify-content:space-between; }
+    button, .btn {
+      background:#008b8b; color:#fff; border:none; padding:8px 14px;
+      margin:0 5px; border-radius:4px; cursor:pointer;
+      font-family:Roboto,sans-serif; font-size:0.9rem;
+    }
+    button:hover { background:#006f6f; }
+    .btn-clear { background:#ccc; color:#333; }
+    input, select {
+      padding:6px 10px; border-radius:4px; border:1px solid #ccc; font-size:0.9rem;
+    }
+    table {
+      width:100%; border-collapse:collapse; margin-top:15px;
+      table-layout:auto; white-space:nowrap;
+    }
+    th, td {
+      padding:8px; border:1px solid #e2e2e2; font-size:0.9rem;
+    }
+    th {
+      background:#e8f7f7; position:sticky; top:0; z-index:2;
+    }
+    .modal-overlay {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.4); display:none;
+      align-items:center; justify-content:center; z-index:9999;
+    }
+    .modal {
+      background:#fff; border-radius:6px; width:90vw;
+      max-height:90vh; overflow:auto; padding:20px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal-header { margin-bottom:15px; }
+    .modal-footer { text-align:right; margin-top:15px; }
+    #ptProcessing {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(255,255,255,0.7); display:none;
+      align-items:center; justify-content:center; z-index:10000;
+      font-size:1.2rem; color:#008b8b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="flex-space">
+      <div>
+        <h1>Payments Module</h1>
+        <h2>Create Payments Against Purchase Orders</h2>
+      </div>
+      <button id="ptBtnNew"><i class="fa fa-plus"></i> New Payment</button>
+    </div>
+
+    <!-- Search bar -->
+    <div class="flex-space" style="margin-top:15px;">
+      <div></div>
+      <div class="flex">
+        <select id="ptSearchCrit">
+          <option>All</option>
+          <option>PO ID</option>
+          <option>Supplier Name</option>
+          <option>Bill Num</option>
+          <option>PMT Mode</option>
+        </select>
+        <input type="text" id="ptSearchInput" placeholder="Search...">
+        <button id="ptBtnSearch">Search</button>
+        <button class="btn-clear" id="ptBtnClear">Clear</button>
+      </div>
+    </div>
+
+    <!-- Payments list -->
+    <table id="ptList">
+      <thead>
+        <tr>
+          <th>Trx Date</th><th>Trx ID</th><th>Supplier ID</th><th>Supplier Name</th>
+          <th>State</th><th>City</th><th>PO ID</th><th>Bill Num</th>
+          <th>PMT Mode</th><th>Amount Paid</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Processing overlay -->
+  <div id="ptProcessing"><i class="fa fa-spinner fa-pulse"></i> Processing...</div>
+
+  <!-- Modal -->
+  <div id="ptModalOverlay" class="modal-overlay">
+    <div class="modal" id="ptModal">
+      <div class="modal-header"><h2 id="ptModalTitle"></h2></div>
+      <div class="modal-body" id="ptModalBody"></div>
+      <div class="modal-footer" id="ptModalFooter"></div>
+    </div>
+  </div>
+
+  <script>
+    // Global state arrays
+    let ptPayments = [], ptSuppliers = [], ptPO = [], ptDims = [];
+
+    // Show/hide processing overlay
+    function ptShowProcessing(){ document.getElementById('ptProcessing').style.display='flex'; }
+    function ptHideProcessing(){ document.getElementById('ptProcessing').style.display='none'; }
+
+    // Load and render payments list
+    function ptRefresh() {
+      ptShowProcessing();
+      google.script.run
+        .withSuccessHandler(ptRenderList)
+        .withFailureHandler(ptHideProcessing)
+        .ptGetAllPayments();
+    }
+
+      function ptInitSelect2() {
+    $('#ptSupplierName')
+      .select2({ placeholder:'Select Supplier', dropdownParent:$('#ptModal') })
+      .on('change', ptOnSupplier);
+
+    $('#ptPOID')
+      .select2({ placeholder:'Select PO', dropdownParent:$('#ptModal') })
+      .on('change', ptOnPO);
+
+    $('#ptBillNum')
+      .select2({ placeholder:'Bill Num', dropdownParent:$('#ptModal') });
+
+    $('#ptPMTMode')
+      .select2({ placeholder:'Payment Mode', dropdownParent:$('#ptModal') });
+  }
+
+
+    function ptRenderList(rows) {
+      ptHideProcessing();
+      ptPayments = rows || [];
+      const tbody = document.querySelector('#ptList tbody');
+      tbody.innerHTML = '';
+      (rows||[]).forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r['Trx Date']}</td>
+          <td>${r['Trx ID']}</td>
+          <td>${r['Supplier ID']}</td>
+          <td>${r['Supplier Name']}</td>
+          <td>${r['State']}</td>
+          <td>${r['City']}</td>
+          <td>${r['PO ID']}</td>
+          <td>${r['Bill Num']}</td>
+          <td>${r['PMT Mode']}</td>
+          <td>${parseFloat(r['Amount Paid']).toFixed(2)}</td>
+          <td>
+            <button class="btn" onclick="ptOpenEdit('${r['Trx ID']}')">Edit</button>
+            <button class="btn-clear" onclick="ptDelete('${r['Trx ID']}')">Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Search & clear
+    function ptSearch() {
+      const crit = document.getElementById('ptSearchCrit').value;
+      const val  = document.getElementById('ptSearchInput').value.toLowerCase();
+      if (crit==='All' || !val) return ptRenderList(ptPayments);
+      const filtered = ptPayments.filter(r => (''+r[crit]).toLowerCase().includes(val));
+      if (!filtered.length) alert('No matching data found');
+      ptRenderList(filtered);
+    }
+    function ptClear() {
+      document.getElementById('ptSearchInput').value='';
+      document.getElementById('ptSearchCrit').value='All';
+      ptRenderList(ptPayments);
+    }
+
+    // On load: fetch lookups & bind buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      ptRefresh();
+      google.script.run.withSuccessHandler(a=>ptSuppliers=a||[]).ptGetSuppliers();
+      google.script.run.withSuccessHandler(a=>ptPO=a||[]).ptGetPO();
+      google.script.run
+      .withSuccessHandler(data => {
+        console.log('CLIENT ptPO data:', data);
+        ptPO = data || [];
+      })
+      .ptGetPO();
+      google.script.run.withSuccessHandler(a=>ptDims=a||[]).ptGetDimensions();
+      document.getElementById('ptBtnNew').onclick    = ptOpenNew;
+      document.getElementById('ptBtnSearch').onclick = ptSearch;
+      document.getElementById('ptBtnClear').onclick  = ptClear;
+    });
+
+    // Modal helpers
+   function ptShowModal(title, body, footer) {
+    $('#ptModalTitle').text(title);
+    $('#ptModalBody').html(body);
+    $('#ptModalFooter').html(footer);
+    $('#ptModalOverlay').css('display','flex');
+    ptInitSelect2();
+  }
+    function ptCloseModal(){
+      document.getElementById('ptModalOverlay').style.display='none';
+    }
+
+
+
+    // Form HTML builders
+    function ptFormBody() {
+      return `
+      <div class="flex-space">
+        <div style="flex:1;margin-right:10px;">
+          <label>Trx Date</label><br><input type="date" id="ptTrxDate"><br><br>
+          <label>Trx ID</label><br>
+          <input type="text" id="ptTrxID" readonly style="width:70%">
+          <button class="btn" onclick="ptGenTrxID()">Generate</button><br><br>
+          <label>Supplier Name</label><br><select id="ptSupplierName" style="width:100%"></select><br><br>
+          <label>Supplier ID</label><br><input type="text" id="ptSupplierID" readonly><br><br>
+          <label>State</label><br><input type="text" id="ptState" readonly><br><br>
+          <label>City</label><br><input type="text" id="ptCity" readonly><br><br>
+        </div>
+        <div style="flex:1;margin-left:10px;">
+          <label>PO ID</label><br><select id="ptPOID" style="width:100%"></select><br><br>
+          <label>Bill Num</label><br><select id="ptBillNum" style="width:100%"></select><br><br>
+          <label>PO Balance</label><br><input type="text" id="ptPOBalance" readonly><br><br>
+          <label>PMT Mode</label><br><select id="ptPMTMode" style="width:100%"></select><br><br>
+          <label>Amount Paid</label><br><input type="number" id="ptAmount" step="0.01"><br>
+        </div>
+      </div>`;
+    }
+    function ptFormFooter(label, handler) {
+      return `
+        <button class="btn" onclick="${handler}">${label}</button>
+        <button class="btn-clear" onclick="ptCloseModal()">Close</button>`;
+    }
+
+    // Open New
+    function ptOpenNew(){
+      ptShowModal('New Payment', ptFormBody(), ptFormFooter('Save','ptSave()'));
+      ptPopulateForm(true);
+    }
+    // Open Edit
+    function ptOpenEdit(id){
+      const rec = ptPayments.find(r=>r['Trx ID']===id);
+      if(!rec) return alert('Record not found');
+      ptShowModal('Edit Payment', ptFormBody(), ptFormFooter('Update','ptUpdate()'));
+      ptPopulateForm(false, rec);
+    }
+
+    // Populate form (new vs edit)
+    function ptPopulateForm(isNew, rec={}){
+      $('#ptTrxDate').val(isNew?'':rec['Trx Date']);
+      $('#ptTrxID').val(isNew?'':rec['Trx ID']);
+      $('#ptSupplierID,#ptState,#ptCity,#ptPOID,#ptBillNum,#ptPOBalance,#ptAmount').val('');
+
+      // supplier dropdown
+      const sup = $('#ptSupplierName').empty().append('<option></option>');
+      ptSuppliers.forEach(s=> sup.append(new Option(s['Supplier Name'],s['Supplier Name'])));
+      if(!isNew) setSelect('#ptSupplierName', rec['Supplier Name']);
+
+      // PMT Mode
+      const pm = $('#ptPMTMode').empty().append('<option></option>');
+      [...new Set(ptDims.map(d=>d['PMT Mode']))]
+        .forEach(m=>pm.append(new Option(m,m)));
+      if(!isNew) setSelect('#ptPMTMode', rec['PMT Mode']);
+    }
+
+    // helper to set select2 value
+    function setSelect(sel, val){
+      const $s = $(sel).append(new Option(val,val,true,true));
+      $s.trigger('change');
+    }
+
+    // Generate unique Trx ID
+    function ptGenTrxID(){
+      ptShowProcessing();
+      google.script.run.withSuccessHandler(id=>{
+        $('#ptTrxID').val(id);
+        ptHideProcessing();
+      }).ptGenerateTrxID();
+    }
+
+    // Supplier changed
+ function ptOnSupplier() {
+    const name = this.value;
+    const sup  = ptSuppliers.find(s=>s['Supplier Name']===name) || {};
+
+    $('#ptSupplierID').val(sup['Supplier ID']||'');
+    $('#ptState').val(sup['State']||'');
+    $('#ptCity').val(sup['City']||'');
+
+    // Filter by Supplier Name (not ID)
+    const orders = (ptPO||[]).filter(o => o['Supplier Name'] === name);
+
+    // Populate PO ID dropdown
+    const $po = $('#ptPOID').empty().append('<option></option>');
+    orders.forEach(o => $po.append(new Option(o['PO ID'], o['PO ID'])));
+
+    // Populate Bill Num dropdown
+    const $bill = $('#ptBillNum').empty().append('<option></option>');
+    orders.forEach(o => $bill.append(new Option(o['Bill Num'], o['Bill Num'])));
+
+    $('#ptSupplierName').select2('close');
+    // trigger PO change if at least one order
+    if (orders.length) $po.trigger('change');
+  }
+
+  // Handler when PO ID changes
+  function ptOnPO() {
+    const id    = this.value;
+    const order = (ptPO||[]).find(o=>o['PO ID']===id) || {};
+
+    $('#ptBillNum').val(order['Bill Num']||'');
+    $('#ptPOBalance').val(order['PO Balance']||'');
+    $('#ptPOID').select2('close');
+  }
+
+    // Save new payment
+    function ptSave(){
+      const rec = {
+        'Trx Date': $('#ptTrxDate').val(),
+        'Trx ID':   $('#ptTrxID').val(),
+        'Supplier ID':$('#ptSupplierID').val(),
+        'Supplier Name':$('#ptSupplierName').val(),
+        'State':    $('#ptState').val(),
+        'City':     $('#ptCity').val(),
+        'PO ID':    $('#ptPOID').val(),
+        'Bill Num': $('#ptBillNum').val(),
+        'PMT Mode': $('#ptPMTMode').val(),
+        'Amount Paid': parseFloat($('#ptAmount').val())
+      };
+      if (!rec['Trx Date']||!rec['Trx ID']||!rec['Supplier Name']||
+          !rec['PO ID']||!rec['Bill Num']||isNaN(rec['Amount Paid'])) {
+        return alert('Fill all required fields');
+      }
+      if (rec['Amount Paid'] > parseFloat($('#ptPOBalance').val()||0)) {
+        return alert('Amount paid is more than PO Balance');
+      }
+      ptShowProcessing();
+      google.script.run.withSuccessHandler(()=>{
+        alert('New Payment Saved');
+        ptCloseModal(); ptRefresh(); ptHideProcessing();
+      }).ptSaveNewPayment(rec);
+    }
+
+    // Update existing
+    function ptUpdate(){
+      const rec = {
+        'Trx Date': $('#ptTrxDate').val(),
+        'Trx ID':   $('#ptTrxID').val(),
+        'Supplier ID':$('#ptSupplierID').val(),
+        'Supplier Name':$('#ptSupplierName').val(),
+        'State':    $('#ptState').val(),
+        'City':     $('#ptCity').val(),
+        'PO ID':    $('#ptPOID').val(),
+        'Bill Num': $('#ptBillNum').val(),
+        'PMT Mode': $('#ptPMTMode').val(),
+        'Amount Paid': parseFloat($('#ptAmount').val())
+      };
+      ptShowProcessing();
+      google.script.run.withSuccessHandler(()=>{
+        alert('Payment Updated');
+        ptCloseModal(); ptRefresh(); ptHideProcessing();
+      }).ptUpdatePayment(rec);
+    }
+
+    // Delete
+    function ptDelete(id){
+      if(!confirm('Delete this payment?')) return;
+      ptShowProcessing();
+      google.script.run.withSuccessHandler(()=>{
+        alert('Payment deleted');
+        ptRefresh(); ptHideProcessing();
+      }).ptDeletePayment(id);
+    }
+  </script>
+</body>
+</html>

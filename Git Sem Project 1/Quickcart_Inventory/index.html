@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <base target="_top">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <!-- ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+    body { background:#f5f7fa; }
+
+    /* Container */
+    #dash-container { width:100%;  margin:0 auto; padding:0px; }
+
+    /* Header */
+    .dash-header h2 { font-size:2rem; color:#021640; margin-bottom:4px; }
+    .dash-header p { font-size:1rem; color:#021640; opacity:0.7; margin-top:2px; }
+
+    /* KPI Cards */
+    .dash-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+    }
+ .dash-kpi-card {
+  background:#fff;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  padding:15px;
+  height:100px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  color:#021640; /* Updated color */
+}
+    .dash-kpi-card h3 {
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      color: #021640; /* Ensure title color */
+    }
+    .dash-kpi-card h3 i {
+      margin-right: 8px;
+    }
+    .dash-kpi-card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #021640; /* Ensure result color */
+    }
+
+    /* Charts Grid */
+    .dash-charts-row { display:flex; gap:20px; width:100%; }
+    .dash-col { display:flex; flex-direction:column; gap:20px; }
+    .dash-col-1 { width:40%; }
+    .dash-col-2 { width:20%; }
+    .dash-col-3 { width:40%; }
+
+    .dash-chart-card {
+      background:#fff;
+      border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      padding:15px;
+      color:#021640;
+    }
+    .dash-chart-card h3 { font-size:1rem; margin-bottom:10px; }
+
+    .dash-row { display:flex; gap:20px; }
+    .dash-half { width:48%; }
+    .dash-full { width:100%; }
+
+    /* Chart Heights */
+    #dash-chart1 { height:300px; }
+    #dash-chart2, #dash-chart3, #dash-chart5, #dash-chart6 { height:300px; }
+    #dash-chart4 { height:620px; }
+    #dash-chart7 { height:300px; }
+  </style>
+</head>
+
+<body>
+  <div id="dash-container">
+    <div class="dash-header">
+      <h2>Dashboard</h2>
+      <p>Key trends and business insights</p>
+    </div>
+
+    <div class="dash-kpi-row">
+      <!-- KPI cards -->
+      <div class="dash-kpi-card"><h3><i class="fas fa-chart-line"></i>Total Sales</h3><h2 id="dash-total-sales">$0</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-shopping-cart"></i>Total Purchases</h3><h2 id="dash-total-purchases">$0</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-dollar-sign"></i>Net Profit</h3><h2 id="dash-net-profit">$0</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-receipt"></i>Total Receivable</h3><h2 id="dash-total-receivable">$0</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-file-invoice-dollar"></i>Total Payable</h3><h2 id="dash-total-payable">$0</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-map-marker-alt"></i>Top Sales Location</h3><h2 id="dash-top-location">–</h2></div>
+      <div class="dash-kpi-card"><h3><i class="fas fa-box-open"></i>Top Selling Item</h3><h2 id="dash-top-item">–</h2></div>
+    </div>
+
+    <div class="dash-charts-row">
+      <!-- Column 1 -->
+      <div class="dash-col dash-col-1">
+        <div class="dash-chart-card dash-full">
+          <h3>Sales Trend</h3>
+          <div id="dash-chart1"></div>
+        </div>
+        <div class="dash-row">
+          <div class="dash-chart-card dash-half">
+            <h3>Sales By Location</h3>
+            <div id="dash-chart2"></div>
+          </div>
+          <div class="dash-chart-card dash-half">
+            <h3>Sales By Category</h3>
+            <div id="dash-chart3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2 -->
+      <div class="dash-col dash-col-2">
+        <div class="dash-chart-card dash-full">
+          <h3>Top 10 Customers</h3>
+          <div id="dash-chart4"></div>
+        </div>
+      </div>
+
+      <!-- Column 3 -->
+      <div class="dash-col dash-col-3">
+        <div class="dash-row">
+          <div class="dash-chart-card dash-half">
+            <h3>Purchase By Location</h3>
+            <div id="dash-chart5"></div>
+          </div>
+          <div class="dash-chart-card dash-half">
+            <h3>Purchase By Category</h3>
+            <div id="dash-chart6"></div>
+          </div>
+        </div>
+        <div class="dash-chart-card dash-full">
+          <h3>Sales By City</h3>
+          <div id="dash-chart7"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      google.script.run
+        .withSuccessHandler(dashRender)
+        .withFailureHandler(err => alert('Error: ' + err.message))
+        .dashGetDashboardData();
+    });
+
+    function dashFmt(v) {
+  return '$' + Math.round(v).toLocaleString('en-US');
+}
+
+    function dashRender(data) {
+      // KPIs
+      document.getElementById('dash-total-sales').textContent      = dashFmt(data.totalSales);
+      document.getElementById('dash-total-purchases').textContent = dashFmt(data.totalPurchases);
+      document.getElementById('dash-net-profit').textContent      = dashFmt(data.netProfit);
+      document.getElementById('dash-total-receivable').textContent= dashFmt(data.totalReceivable);
+      document.getElementById('dash-total-payable').textContent   = dashFmt(data.totalPayable);
+      document.getElementById('dash-top-location').textContent    = data.topLocation;
+      document.getElementById('dash-top-item').textContent        = data.topItem;
+
+      // Chart 1: Sales Trend (no dataLabels)
+new ApexCharts(document.querySelector('#dash-chart1'), {
+  chart: {
+    type: 'area',
+    height: 300,
+    fontFamily: 'Arial, sans-serif',
+    toolbar: { show: false }
+  },
+  series: [{
+    name: 'Sales',
+    data: data.salesTrend.values
+  }],
+  dataLabels: { enabled: false },
+  stroke: {
+    curve: 'smooth',
+    width: 2,
+    colors: ['#021640']
+  },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shade: 'light',
+      type: 'vertical',
+      shadeIntensity: 0.8,
+      opacityFrom: 0.7,
+      opacityTo: 0.2,
+      stops: [0, 100]
+    },
+    colors: ['#021640']
+  },
+  markers: {
+    size: 2,
+    colors: ['#021640'],
+    strokeColors: ['#021640'],
+    strokeWidth: 2
+  },
+  xaxis: {
+    type: 'datetime',
+    categories: data.salesTrend.dates,
+    labels: {
+      format: 'MMM-yy',
+      style: {
+        colors: '#021640',
+        fontSize: '12px'
+      }
+    }
+  },
+  yaxis: {
+    labels: {
+      formatter: v => (v / 1000) + 'k',
+      style: {
+        colors: '#021640',
+        fontSize: '12px'
+      }
+    }
+  },
+  tooltip: {
+    x: {
+      format: 'MMM yyyy'
+    }
+  },
+  colors: ['#021640'],
+  grid: {
+    borderColor: '#e0e0e0',
+    strokeDashArray: 4
+  }
+}).render();
+
+
+      // Chart 2: Sales By Location
+      new ApexCharts(document.querySelector('#dash-chart2'), {
+        chart:{ type:'bar', height:300, toolbar:{ show:false } },
+        series:[{ data: data.salesByLocation.values }],
+        dataLabels:{ enabled:false },
+        plotOptions:{ bar:{ columnWidth:'80%', borderRadius:4 } },
+        xaxis:{ categories: data.salesByLocation.labels, labels:{ style:{ colors:'#021640' } } },
+        yaxis:{ labels:{ formatter:v=> (v/1000)+'K', style:{ colors:'#021640' } } },
+        colors:['#0066CC'],
+        grid:{ strokeDashArray:4 }
+      }).render();
+
+      // Chart 3: Sales By Category
+      new ApexCharts(document.querySelector('#dash-chart3'), {
+        chart:{ type:'pie', height:300 },
+        series: data.salesByCategory.values,
+        labels: data.salesByCategory.labels,
+        dataLabels:{ enabled:true },
+        colors:['#021640','#0066CC','#0099CC','#4572C4','#558ED5','#1F4E79'],
+        legend:{ position:'bottom' }
+      }).render();
+
+      // Chart 4: Top 10 Customers
+new ApexCharts(document.querySelector('#dash-chart4'), {
+  chart: {
+    type: 'bar',
+    height: 700,
+    toolbar: { show: false }
+  },
+  series: [{
+    data: data.topCustomers.values
+  }],
+  dataLabels: {
+    enabled: true,
+    formatter: function (val) {
+      return Math.round(val / 1000) + 'K';
+    },
+    style: {
+      colors: ['#FFFFFF']
+    }
+  },
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      borderRadius: 4
+    }
+  },
+  xaxis: {
+    categories: data.topCustomers.labels,
+    labels: {
+      formatter: v => Math.round(v / 1000) + 'K',
+      style: { colors: '#021640' }
+    }
+  },
+  colors: ['#0099CC'],
+  grid: { strokeDashArray: 4 }
+}).render();
+
+      // Chart 5: Purchase By Location (Donut width 50%)
+      const filteredLabels = [];
+      const filteredValues = [];
+
+      data.purchaseByLocation.labels.forEach((label, index) => {
+      if (label && label.toLowerCase() !== 'unknown') {
+        filteredLabels.push(label);
+        filteredValues.push(data.purchaseByLocation.values[index]);
+      }
+    });
+
+    new ApexCharts(document.querySelector('#dash-chart5'), {
+      chart: { type: 'donut', height: 300 },
+      series: filteredValues,
+      labels: filteredLabels,
+      plotOptions: { pie: { donut: { size: '50%' } } },
+      dataLabels: { enabled: true },
+      colors: ['#021640', '#0066CC', '#0099CC', '#4572C4', '#558ED5', '#1F4E79'],
+      legend: { position: 'bottom' }
+    }).render();
+
+      // Chart 6: Purchase By Category (Stacked, no dataLabels, filtered years 2024 & 2025, increased bar size)
+      (function(){
+        const pc = data.purchaseByCategory;
+        const years = pc.years.filter(y=> y==2024 || y==2025);
+        const series = pc.series.map(s=>({ name: s.name, data: years.map(y=> s.data[pc.years.indexOf(y)]||0) }));
+        new ApexCharts(document.querySelector('#dash-chart6'), {
+          chart:{ type:'bar', height:300, stacked:true, toolbar:{ show:false } },
+          series: series,
+          dataLabels:{ enabled:false },
+          plotOptions:{ bar:{ borderRadius:4, columnWidth:'80%' } },
+          xaxis:{ categories: years, labels:{ style:{ colors:'#021640' } } },
+          yaxis:{ labels:{ formatter:v=> (v/1000)+'K', style:{ colors:'#021640' } } },
+          colors:['#021640','#0099CC','#558ED5','#4572C4','#0066CC','#1F4E79'],
+          legend:{ position:'bottom' },
+          grid:{ strokeDashArray:4 }
+        }).render();
+      })();
+
+      // Chart 7: Sales By City (Treemap, color #0066CC)
+      new ApexCharts(document.querySelector('#dash-chart7'), {
+        chart:{ type:'treemap', height:300 },
+        series:[{ data: data.salesByCity }],
+        colors:['#0066CC']
+      }).render();
+    }
+  </script>
+</body>
+</html>

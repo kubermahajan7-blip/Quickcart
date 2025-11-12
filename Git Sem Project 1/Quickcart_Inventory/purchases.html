@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Purchase Orders</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Select2 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  
+  <!-- Flatpickr (Date Picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <style>
+    :root {
+      --primary: #1abc9c;
+      --primary-light: #d1f2eb;
+      --primary-dark: #16a085;
+      --secondary: #3498db;
+      --dark: #2c3e50;
+      --light-dark: #34495e;
+      --gray: #7f8c8d;
+      --light-gray: #ecf0f1;
+      --white: #ffffff;
+      --error: #e74c3c;
+      --warning: #f39c12;
+      --success: #2ecc71;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      color: var(--light-dark);
+      padding: 20px;
+    }
+    
+    .purchase-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background-color: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+    }
+    
+    .header-section {
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .header-section h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+    
+    .header-section p {
+      color: var(--gray);
+      font-size: 1.05rem;
+    }
+    
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--white);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: var(--white);
+    }
+    
+    .btn-secondary:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #bdc3c7;
+      color: var(--light-dark);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--light-gray);
+    }
+    
+    .search-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .search-select {
+      padding: 9px;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+      background-color: var(--white);
+      min-width: 160px;
+    }
+    
+    .search-input {
+      padding: 10px;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+      width: 250px;
+    }
+    
+    .purchase-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    
+    .purchase-table th {
+      background-color: var(--dark);
+      color: var(--white);
+      padding: 14px 16px;
+      text-align: left;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    
+    .purchase-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--light-gray);
+      color: var(--light-dark);
+      font-size: 0.92rem;
+    }
+    
+    .purchase-table tr:hover {
+      background-color: rgba(26, 188, 156, 0.05);
+    }
+    
+    .action-cell {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .view-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+    }
+    
+    .edit-btn {
+      background-color: #f39c12;
+      color: white;
+      border: none;
+    }
+    
+    .update-btn {
+      background-color: var(--success);
+      color: white;
+      border: none;
+    }
+    
+    .cancel-btn {
+      background-color: var(--gray);
+      color: white;
+      border: none;
+    }
+    
+    .delete-btn {
+      background-color: var(--error);
+      color: white;
+      border: none;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      overflow: auto;
+    }
+    
+    .modal-content {
+      background-color: var(--white);
+      margin: 0;                      /* Remove spacing */
+      padding: 30px;
+      border-radius: 0;               /* Remove rounded corners */
+      width: 100vw;                   /* Full viewport width */
+      height: 100vh;                  /* Full viewport height */
+      box-shadow: none;              /* Optional: Remove shadow */
+      overflow: auto;                /* Scroll if content overflows */
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .modal-header h2 {
+      font-family: 'Montserrat', sans-serif;
+      color: var(--dark);
+      font-size: 1.6rem;
+      margin: 0;
+    }
+    
+    .close-btn {
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--gray);
+      transition: color 0.3s;
+    }
+    
+    .close-btn:hover {
+      color: var(--dark);
+    }
+    
+    .form-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid var(--light-gray);
+      border-radius: 6px;
+      background-color: #fafafa;
+    }
+    
+    .form-section h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: var(--dark);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--dark);
+      font-size: 0.95rem;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.95rem;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+    }
+    
+    .required:after {
+      content: " *";
+      color: var(--error);
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--light-gray);
+    }
+    
+    .processing-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255,255,255,0.85);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .select2-container {
+      width: 100% !important;
+    }
+    
+    .id-generate {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .id-field {
+      flex: 1;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      gap: 6px;
+    }
+    
+    .page-btn {
+      padding: 8px 14px;
+      background-color: var(--white);
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      transition: all 0.3s;
+    }
+    
+    .page-btn:hover:not(.active) {
+      background-color: var(--light-gray);
+    }
+    
+    .page-btn.active {
+      background-color: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    
+    .no-data-container {
+      text-align: center;
+      padding: 50px 20px;
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-top: 20px;
+    }
+    
+    .no-data-icon {
+      font-size: 3.5rem;
+      color: #bdc3c7;
+      margin-bottom: 20px;
+    }
+    
+    .no-data-title {
+      color: var(--gray);
+      margin-bottom: 10px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    .items-table {
+      width: max-content;        /* Allows table to grow with content */
+      table-layout: auto;        /* Let browser decide column width */
+      border-collapse: collapse;
+    }
+    
+    .items-table th, .items-table td {
+      padding: 8px 12px;
+      white-space: nowrap;   /* Prevent text from wrapping */
+    }
+
+    .items-table input, .items-table select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .items-table input:focus, .items-table select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    
+    .items-table .readonly {
+      background-color: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .items-table-container {
+      max-height: auto;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .add-item-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    
+    .remove-item-btn {
+      background: none;
+      border: none;
+      color: var(--error);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+    
+    .totals-row {
+      font-weight: bold;
+      background-color: #f5f5f5;
+    }
+    
+    .editable {
+      background-color: #fffde7;
+      border: 1px solid #ffd54f;
+    }
+    
+    @media (max-width: 900px) {
+      .action-bar {
+        flex-direction: column;
+      }
+      
+      .btn-group {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .search-group {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .modal-content {
+        width: 98%;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="purchase-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1>Purchase Orders</h1>
+      <p>Create and manage your purchase orders</p>
+    </div>
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="poOpenNewPOModal()">
+          <i class="fas fa-file-invoice"></i> New PO
+        </button>
+        <button class="btn btn-secondary" onclick="poOpenPMTStatusModal()">
+          <i class="fas fa-money-bill-wave"></i> PMT Status
+        </button>
+        <button class="btn btn-secondary" onclick="poOpenShippingStatusModal()">
+          <i class="fas fa-truck"></i> Shipping Status
+        </button>
+      </div>
+      
+      <div class="search-group">
+        <select id="poSearchCriteria" class="search-select">
+          <option value="all">All</option>
+          <option value="PO ID">PO ID</option>
+          <option value="Supplier Name">Supplier Name</option>
+          <option value="Bill Num">Bill Num</option>
+          <option value="PMT Status">PMT Status</option>
+          <option value="Shipping Status">Shipping Status</option>
+        </select>
+        <input type="text" id="poSearchInput" class="search-input" placeholder="Search...">
+        <button class="btn btn-outline" onclick="poSearchPOs()">
+          <i class="fas fa-search"></i> Search
+        </button>
+        <button class="btn btn-outline" onclick="poClearSearch()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+      </div>
+    </div>
+    
+    <!-- Purchase Orders Table -->
+    <div id="poTableContainer">
+      <table class="purchase-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>PO ID</th>
+            <th>Supplier ID</th>
+            <th>Supplier Name</th>
+            <th>Bill Num</th>
+            <th>State</th>
+            <th>City</th>
+            <th>Total Amount</th>
+            <th>Total Paid</th>
+            <th>PO Balance</th>
+            <th>PMT Status</th>
+            <th>Shipping Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="poTableBody">
+          <!-- Data will be populated by JavaScript -->
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination" id="poPagination">
+        <!-- Pagination buttons will be added here -->
+      </div>
+    </div>
+    
+    <!-- No Data Message -->
+    <div id="poNoData" class="no-data-container" style="display:none;">
+      <i class="fas fa-inbox no-data-icon"></i>
+      <h3 class="no-data-title">No purchase orders found</h3>
+      <p>Click "New PO" to create your first purchase order</p>
+    </div>
+  </div>
+  
+  <!-- PMT Status Modal -->
+  <div id="poPMTStatusModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Configure PMT Status</h2>
+        <span class="close-btn" onclick="poClosePMTStatusModal()">&times;</span>
+      </div>
+      <div class="form-group">
+        <label class="required">PMT Status</label>
+        <input type="text" id="poNewPMTStatus" class="form-control" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="poClosePMTStatusModal()">Close</button>
+        <button class="btn btn-primary" onclick="poSaveNewPMTStatus()">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Shipping Status Modal -->
+  <div id="poShippingStatusModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Configure Shipping Status</h2>
+        <span class="close-btn" onclick="poCloseShippingStatusModal()">&times;</span>
+      </div>
+      <div class="form-group">
+        <label class="required">Shipping Status</label>
+        <input type="text" id="poNewShippingStatus" class="form-control" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="poCloseShippingStatusModal()">Close</button>
+        <button class="btn btn-primary" onclick="poSaveNewShippingStatus()">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- New PO Modal -->
+  <div id="poNewPOModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create New PO</h2>
+        <span class="close-btn" onclick="poCloseNewPOModal()">&times;</span>
+      </div>
+      
+      <!-- Section 1: PO Header -->
+      <div class="form-section">
+        <h3>PO Information</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="required">PO ID</label>
+            <div class="id-generate">
+              <input type="text" id="poPOID" class="form-control id-field" readonly>
+              <button class="btn btn-secondary" onclick="poGeneratePOID()">Generate</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="required">PO Date</label>
+            <input type="text" id="poPODate" class="form-control date-picker" placeholder="Select date">
+          </div>
+          
+          <div class="form-group">
+            <label class="required">Supplier Name</label>
+            <select id="poSupplierName" class="form-control" style="width:100%" onchange="poSupplierChanged()"></select>
+          </div>
+          
+          <div class="form-group">
+            <label class="required">Supplier ID</label>
+            <input type="text" id="poSupplierID" class="form-control" readonly>
+          </div>
+          
+          <div class="form-group">
+            <label class="required">State</label>
+            <input type="text" id="poState" class="form-control" readonly>
+          </div>
+          
+          <div class="form-group">
+            <label class="required">City</label>
+            <input type="text" id="poCity" class="form-control" readonly>
+          </div>
+          
+          <div class="form-group">
+            <label class="required">Bill Num</label>
+            <input type="text" id="poBillNum" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Section 2: PO Items -->
+      <div class="form-section">
+        <h3>PO Items</h3>
+        <button class="add-item-btn" onclick="poAddItemRow()">
+          <i class="fas fa-plus"></i> Add Item
+        </button>
+        
+        <div class="items-table-container">
+          <table class="items-table" style="table-layout: auto; width: max-content;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th >PO ID</th>
+                <th >Detail ID</th>
+                <th >Supplier ID</th>
+                <th >Supplier Name</th>
+                <th >State</th>
+                <th >City</th>
+                <th >Bill Num</th>
+                <th >Item ID</th>
+                <th >Item Type</th>
+                <th >Item Category</th>
+                <th >Item Subcategory</th>
+                <th >Item Name</th>
+                <th >QTY</th>
+                <th >Unit Cost</th>
+                <th >Cost Excl Tax</th>
+                <th >Tax Rate</th>
+                <th >Total Tax</th>
+                <th >Cost Incl Tax</th>
+                <th >Shipping Fees</th>
+                <th >Total Price</th>
+                <th >Action</th>
+              </tr>
+            </thead>
+            <tbody id="poItemsTableBody">
+              <!-- Item rows will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="poCloseNewPOModal()">Close</button>
+        <button class="btn btn-primary" onclick="poSaveNewPO()">Save PO</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- PO Details Modal -->
+  <div id="poDetailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>PO Details</h2>
+        <span class="close-btn" onclick="poCloseDetailsModal()">&times;</span>
+      </div>
+      
+      <div id="poDetailsContent">
+        <!-- PO details will be loaded here -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Processing Overlay -->
+  <div id="poProcessingOverlay" class="processing-overlay">
+    <div class="spinner"></div>
+    <p>Processing...</p>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+        // Global variables (no change, just for context)
+    let poCurrentPage = 1;
+    const poPageSize = 10;
+    let poAllPOs = [];
+    let poFilteredPOs = [];
+    let poSuppliers = [];
+    let poItems = [];
+    let poPMTStatuses = [];
+    let poShippingStatuses = [];
+    let poDetailCounter = 1; // This counter is not strictly needed if detailId is randomly generated
+
+    // Initialize page (no change, just for context)
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize date picker
+      flatpickr("#poPODate", {
+        dateFormat: "Y-m-d", // Format for internal use and saving to sheet
+        defaultDate: "today"
+      });
+
+      // Load initial data
+      poLoadSuppliers();
+      poLoadInventoryItems();
+      poLoadPMTStatuses();
+      poLoadShippingStatuses();
+      poLoadPOs();
+    });
+
+    // Load suppliers (no change, just for context)
+    function poLoadSuppliers() {
+      google.script.run
+        .withSuccessHandler(function(suppliers) {
+          poSuppliers = suppliers;
+          const supplierSelect = $('#poSupplierName');
+          supplierSelect.empty();
+
+          poSuppliers.forEach(supplier => {
+            if (supplier.name) {
+              supplierSelect.append(new Option(supplier.name, supplier.id));
+            }
+          });
+
+          supplierSelect.select2();
+        })
+        .poGetSuppliers();
+    }
+
+    // Load inventory items (no change, just for context)
+    function poLoadInventoryItems() {
+      google.script.run
+        .withSuccessHandler(function(items) {
+          poItems = items;
+        })
+        .poGetInventoryItems();
+    }
+
+    // Load PMT statuses (no change, just for context)
+    function poLoadPMTStatuses() {
+      google.script.run
+        .withSuccessHandler(function(statuses) {
+          poPMTStatuses = statuses;
+        })
+        .poGetPMTStatuses();
+    }
+
+    // Load shipping statuses (no change, just for context)
+    function poLoadShippingStatuses() {
+      google.script.run
+        .withSuccessHandler(function(statuses) {
+          poShippingStatuses = statuses;
+        })
+        .poGetShippingStatuses();
+    }
+
+    // Load purchase orders
+    // Fix (ii): Added console.log to inspect fetched POs.
+    function poLoadPOs() {
+      poShowProcessing();
+      google.script.run
+        .withSuccessHandler(function(pos) {
+          console.log("Fetched POs:", pos); // Debug: Check what data is returned
+          poAllPOs = pos;
+          poFilteredPOs = [...pos];
+          poRenderPOTable();
+          poHideProcessing();
+        })
+        .withFailureHandler(function(error) { // Added failure handler for initial load
+            poHideProcessing();
+            console.error("Error loading POs:", error);
+            // alert("Error loading purchase orders: " + error.message); // Uncomment for user-facing error
+        })
+        .poGetPOs();
+    }
+
+    // Render PO table
+    // Fix (ii): Ensured date formatting for display.
+    function poRenderPOTable() {
+      const startIndex = (poCurrentPage - 1) * poPageSize;
+      const endIndex = startIndex + poPageSize;
+      const pagePOs = poFilteredPOs.slice(startIndex, endIndex);
+      const tableBody = document.getElementById('poTableBody');
+
+      tableBody.innerHTML = '';
+
+      if (pagePOs.length === 0) {
+        document.getElementById('poTableContainer').style.display = 'none';
+        document.getElementById('poNoData').style.display = 'block';
+        document.getElementById('poPagination').innerHTML = '';
+        return;
+      }
+
+      document.getElementById('poTableContainer').style.display = 'block';
+      document.getElementById('poNoData').style.display = 'none';
+
+      pagePOs.forEach((po, index) => {
+        // Format date for display
+        const formattedDate = po.date instanceof Date ?
+                              po.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) :
+                              po.date || ''; // Use existing value if not a Date object or empty
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${formattedDate}</td>
+          <td>${po.id || ''}</td>
+          <td>${po.supplierId || ''}</td>
+          <td>${po.supplierName || ''}</td>
+          <td>${po.billNum || ''}</td>
+          <td>${po.state || ''}</td>
+          <td>${po.city || ''}</td>
+          <td>${po.totalAmount ? po.totalAmount.toFixed(2) : '0.00'}</td>
+          <td>${po.totalPaid ? po.totalPaid.toFixed(2) : '0.00'}</td>
+          <td>${po.poBalance ? po.poBalance.toFixed(2) : '0.00'}</td>
+          <td>${po.pmtStatus || ''}</td>
+          <td>${po.shippingStatus || ''}</td>
+          <td class="action-cell">
+            <button class="action-btn view-btn" onclick="poViewPODetails('${po.id}')">
+              <i class="fas fa-eye"></i> View
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Render pagination
+      poRenderPagination();
+    }
+
+    // Render pagination (no change, just for context)
+    function poRenderPagination() {
+      const totalPages = Math.ceil(poFilteredPOs.length / poPageSize);
+      const paginationDiv = document.getElementById('poPagination');
+      paginationDiv.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+      prevBtn.disabled = poCurrentPage === 1;
+      prevBtn.onclick = () => {
+        if (poCurrentPage > 1) {
+          poCurrentPage--;
+          poRenderPOTable();
+        }
+      };
+      paginationDiv.appendChild(prevBtn);
+
+      // Page buttons
+      for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `page-btn ${i === poCurrentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+          poCurrentPage = i;
+          poRenderPOTable();
+        };
+        paginationDiv.appendChild(pageBtn);
+      }
+
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+      nextBtn.disabled = poCurrentPage === totalPages;
+      nextBtn.onclick = () => {
+        if (poCurrentPage < totalPages) {
+          poCurrentPage++;
+          poRenderPOTable();
+        }
+      };
+      paginationDiv.appendChild(nextBtn);
+    }
+
+    // Open PMT Status modal (no change, just for context)
+    function poOpenPMTStatusModal() {
+      document.getElementById('poPMTStatusModal').style.display = 'block';
+      document.getElementById('poNewPMTStatus').value = '';
+    }
+
+    // Close PMT Status modal (no change, just for context)
+    function poClosePMTStatusModal() {
+      document.getElementById('poPMTStatusModal').style.display = 'none';
+    }
+
+    // Save new PMT Status (no change, just for context)
+    function poSaveNewPMTStatus() {
+      const status = document.getElementById('poNewPMTStatus').value.trim();
+
+      if (!status) {
+        // Changed alert to a more user-friendly message box if you have one
+        // For now, keeping alert as per original code, but consider replacing
+        alert('Please enter a PMT status');
+        return;
+      }
+
+      poShowProcessing();
+      google.script.run
+        .withSuccessHandler(function() {
+          poHideProcessing();
+          alert('New PMT Status Added');
+          poClosePMTStatusModal();
+          poLoadPMTStatuses();
+        })
+        .withFailureHandler(function(error) { // Added failure handler
+            poHideProcessing();
+            console.error("Error adding PMT status:", error);
+            alert("Error adding PMT status: " + error.message);
+        })
+        .poAddNewPMTStatus(status);
+    }
+
+    // Open Shipping Status modal (no change, just for context)
+    function poOpenShippingStatusModal() {
+      document.getElementById('poShippingStatusModal').style.display = 'block';
+      document.getElementById('poNewShippingStatus').value = '';
+    }
+
+    // Close Shipping Status modal (no change, just for context)
+    function poCloseShippingStatusModal() {
+      document.getElementById('poShippingStatusModal').style.display = 'none';
+    }
+
+    // Save new Shipping Status (no change, just for context)
+    function poSaveNewShippingStatus() {
+      const status = document.getElementById('poNewShippingStatus').value.trim();
+
+      if (!status) {
+        // Changed alert to a more user-friendly message box if you have one
+        // For now, keeping alert as per original code, but consider replacing
+        alert('Please enter a shipping status');
+        return;
+      }
+
+      poShowProcessing();
+      google.script.run
+        .withSuccessHandler(function() {
+          poHideProcessing();
+          alert('New Shipping Status Added');
+          poCloseShippingStatusModal();
+          poLoadShippingStatuses();
+        })
+        .withFailureHandler(function(error) { // Added failure handler
+            poHideProcessing();
+            console.error("Error adding shipping status:", error);
+            alert("Error adding shipping status: " + error.message);
+        })
+        .poAddNewShippingStatus(status);
+    }
+
+    // Open New PO modal (no change, just for context)
+    function poOpenNewPOModal() {
+      document.getElementById('poNewPOModal').style.display = 'block';
+      document.getElementById('poPOID').value = '';
+      document.getElementById('poPODate').value = '';
+      document.getElementById('poBillNum').value = '';
+      document.getElementById('poSupplierID').value = '';
+      document.getElementById('poState').value = '';
+      document.getElementById('poCity').value = '';
+      $('#poSupplierName').val(null).trigger('change');
+      document.getElementById('poItemsTableBody').innerHTML = '';
+      poDetailCounter = 1; // Reset counter for new PO
+    }
+
+    // Close New PO modal (no change, just for context)
+    function poCloseNewPOModal() {
+      document.getElementById('poNewPOModal').style.display = 'none';
+    }
+
+    // Generate PO ID (no change, just for context)
+    function poGeneratePOID() {
+      poShowProcessing();
+      google.script.run
+        .withSuccessHandler(function(newId) {
+          document.getElementById('poPOID').value = newId;
+          poHideProcessing();
+        })
+        .withFailureHandler(function(error) { // Added failure handler
+            poHideProcessing();
+            console.error("Error generating PO ID:", error);
+            alert("Error generating PO ID: " + error.message);
+        })
+        .poGeneratePOID();
+    }
+
+    // Supplier changed handler (no change, just for context)
+    function poSupplierChanged() {
+      const supplierId = $('#poSupplierName').val();
+      if (!supplierId) return;
+
+      const supplier = poSuppliers.find(s => s.id === supplierId);
+      if (supplier) {
+        document.getElementById('poSupplierID').value = supplier.id;
+        document.getElementById('poState').value = supplier.state;
+        document.getElementById('poCity').value = supplier.city;
+
+        // Update any existing item rows
+        const rows = document.querySelectorAll('#poItemsTableBody tr');
+        rows.forEach(row => {
+          // Ensure these cells exist and are meant to be updated
+          if (row.cells[3]) row.cells[3].textContent = supplier.id; // Supplier ID
+          if (row.cells[4]) row.cells[4].textContent = supplier.name; // Supplier Name
+          if (row.cells[5]) row.cells[5].textContent = supplier.state; // State
+          if (row.cells[6]) row.cells[6].textContent = supplier.city; // City
+          // Bill Num is from the main form, not supplier data, so keep original logic
+          // row.cells[7].textContent = document.getElementById('poBillNum').value; // Bill Num
+        });
+      }
+    }
+
+    // Add item row (no change, just for context)
+    function poAddItemRow() {
+      const poId = document.getElementById('poPOID').value;
+      const poDate = document.getElementById('poPODate').value;
+      const supplierId = document.getElementById('poSupplierID').value;
+      const supplierName = $('#poSupplierName option:selected').text();
+      const state = document.getElementById('poState').value;
+      const city = document.getElementById('poCity').value;
+      const billNum = document.getElementById('poBillNum').value;
+
+      if (!poId) {
+        alert('Please generate a PO ID first');
+        return;
+      }
+
+      if (!supplierId) {
+        alert('Please select a supplier first');
+        return;
+      }
+
+      if (!billNum) {
+        alert('Please enter a Bill Number');
+        return;
+      }
+
+      // Generate a unique detail ID
+      const detailId = `D${Math.floor(10000 + Math.random() * 90000)}`;
+      const tableBody = document.getElementById('poItemsTableBody');
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="readonly">${poDate}</td>
+        <td class="readonly">${poId}</td>
+        <td class="readonly">${detailId}</td>
+        <td class="readonly">${supplierId}</td>
+        <td class="readonly">${supplierName}</td>
+        <td class="readonly">${state}</td>
+        <td class="readonly">${city}</td>
+        <td class="readonly">${billNum}</td>
+        <td><span class="item-id"></span></td>
+        <td><span class="item-type"></span></td>
+        <td><span class="item-category"></span></td>
+        <td><span class="item-subcategory"></span></td>
+        <td>
+          <select class="item-select" onchange="poItemChanged(this)">
+            <option value="">Select Item</option>
+            ${poItems.map(item => `<option value="${item.id}">${item.name}</option>`).join('')}
+          </select>
+        </td>
+        <td><input type="number" min="1" class="qty-purchased" onchange="poCalculateRow(this)" oninput="poCalculateRow(this)"></td>
+        <td><input type="number" min="0.01" step="0.01" class="unit-cost" onchange="poCalculateRow(this)" oninput="poCalculateRow(this)"></td>
+        <td><span class="cost-excl-tax">0.00</span></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="tax-rate" onchange="poCalculateRow(this)" oninput="poCalculateRow(this)">%</td>
+        <td><span class="total-tax">0.00</span></td>
+        <td><span class="cost-incl-tax">0.00</span></td>
+        <td><span class="shipping-fees">0.00</span></td>
+        <td><span class="total-price">0.00</span></td>
+        <td><button class="remove-item-btn" onclick="poRemoveItemRow(this)"><i class="fas fa-times"></i></button></td>
+      `;
+
+      tableBody.appendChild(row);
+      // poDetailCounter++; // Not needed if detailId is randomly generated
+    }
+
+    // Item changed handler (no change, just for context)
+    function poItemChanged(select) {
+      const row = select.closest('tr');
+      const itemId = select.value;
+
+      if (!itemId) {
+        row.querySelector('.item-id').textContent = '';
+        row.querySelector('.item-type').textContent = '';
+        row.querySelector('.item-category').textContent = '';
+        row.querySelector('.item-subcategory').textContent = '';
+        return;
+      }
+
+      const item = poItems.find(i => i.id === itemId);
+      if (item) {
+        row.querySelector('.item-id').textContent = item.id;
+        row.querySelector('.item-type').textContent = item.type;
+        row.querySelector('.item-category').textContent = item.category;
+        row.querySelector('.item-subcategory').textContent = item.subcategory;
+      }
+
+      // Trigger calculation
+      poCalculateRow(select);
+    }
+
+    // Calculate row values (no change, just for context)
+    function poCalculateRow(input) {
+      const row = input.closest('tr');
+      const qty = parseFloat(row.querySelector('.qty-purchased').value) || 0;
+      const unitCost = parseFloat(row.querySelector('.unit-cost').value) || 0;
+      const taxRate = parseFloat(row.querySelector('.tax-rate').value) || 0;
+
+      // Calculate values
+      const costExclTax = qty * unitCost;
+      const totalTax = costExclTax * (taxRate / 100);
+      const costInclTax = costExclTax + totalTax;
+      const shippingFees = costInclTax * 0.01; // 1% of cost incl tax
+      const totalPrice = costInclTax + shippingFees;
+
+      // Update fields
+      row.querySelector('.cost-excl-tax').textContent = costExclTax.toFixed(2);
+      row.querySelector('.total-tax').textContent = totalTax.toFixed(2);
+      row.querySelector('.cost-incl-tax').textContent = costInclTax.toFixed(2);
+      row.querySelector('.shipping-fees').textContent = shippingFees.toFixed(2);
+      row.querySelector('.total-price').textContent = totalPrice.toFixed(2);
+    }
+
+    // Remove item row (no change, just for context)
+    function poRemoveItemRow(button) {
+      const row = button.closest('tr');
+      row.remove();
+    }
+
+    // Save new PO
+    // Fix (i): Changed how itemName is retrieved to avoid querySelector error.
+    // Fix (iii): Added withFailureHandler to ensure processing overlay is hidden on error.
+    function poSaveNewPO() {
+      const poId = document.getElementById('poPOID').value;
+      const poDate = document.getElementById('poPODate').value;
+      const billNum = document.getElementById('poBillNum').value;
+      const supplierId = document.getElementById('poSupplierID').value;
+
+      if (!poId) {
+        alert('Please generate a PO ID');
+        return;
+      }
+
+      if (!poDate) {
+        alert('Please select a PO date');
+        return;
+      }
+
+      if (!supplierId) {
+        alert('Please select a supplier');
+        return;
+      }
+
+      if (!billNum) {
+        alert('Please enter a Bill Number');
+        return;
+      }
+
+      const items = [];
+      const rows = document.querySelectorAll('#poItemsTableBody tr');
+
+      if (rows.length === 0) {
+        alert('Please add at least one item to the PO');
+        return;
+      }
+
+      let isValid = true;
+
+      rows.forEach(row => {
+        const itemSelectElement = row.querySelector('.item-select');
+        const itemId = row.querySelector('.item-id').textContent;
+        const qty = parseFloat(row.querySelector('.qty-purchased').value) || 0;
+        const unitCost = parseFloat(row.querySelector('.unit-cost').value) || 0;
+        const taxRate = parseFloat(row.querySelector('.tax-rate').value) || 0;
+
+        if (!itemId) {
+          isValid = false;
+          alert('Please select an item for all rows');
+          return;
+        }
+
+        if (qty <= 0) {
+          isValid = false;
+          alert('Please enter a valid quantity for all items');
+          return;
+        }
+
+        if (unitCost <= 0) {
+          isValid = false;
+          alert('Please enter a valid unit cost for all items');
+          return;
+        }
+
+        // Fix (i) - More robust way to get selected item name
+        const selectedItemName = itemSelectElement && itemSelectElement.selectedIndex !== -1
+                                 ? itemSelectElement.options[itemSelectElement.selectedIndex].textContent
+                                 : '';
+
+        const item = {
+          date: row.cells[0].textContent,
+          poId: row.cells[1].textContent,
+          detailId: row.cells[2].textContent,
+          supplierId: row.cells[3].textContent,
+          supplierName: row.cells[4].textContent,
+          state: row.cells[5].textContent,
+          city: row.cells[6].textContent,
+          billNum: row.cells[7].textContent,
+          itemId: itemId,
+          itemType: row.cells[9].textContent,
+          itemCategory: row.cells[10].textContent,
+          itemSubcategory: row.cells[11].textContent,
+          itemName: selectedItemName, // Use the more robustly retrieved name
+          qtyPurchased: qty,
+          unitCost: unitCost,
+          costExclTax: parseFloat(row.querySelector('.cost-excl-tax').textContent),
+          taxRate: taxRate,
+          totalTax: parseFloat(row.querySelector('.total-tax').textContent),
+          costInclTax: parseFloat(row.querySelector('.cost-incl-tax').textContent),
+          shippingFees: parseFloat(row.querySelector('.shipping-fees').textContent),
+          totalPrice: parseFloat(row.querySelector('.total-price').textContent)
+        };
+
+        items.push(item);
+      });
+
+      if (!isValid) return;
+
+      poShowProcessing();
+      google.script.run
+        .withSuccessHandler(function() {
+          poHideProcessing();
+          alert('New PO Created Successfully');
+          poCloseNewPOModal();
+          poLoadPOs(); // This will re-load POs and hide processing on its success
+        })
+        .withFailureHandler(function(error) { // Fix (iii): Added failure handler
+          poHideProcessing(); // Hide processing overlay even if there's an error
+          console.error("Error saving PO:", error); // Log the error for debugging
+          alert("Error saving PO: " + error.message); // Inform the user
+        })
+        .poSaveNewPO(items);
+    }
+
+    // View PO details (no change, just for context)
+    function poViewPODetails(poId) {
+  poShowProcessing();
+  google.script.run
+    .withSuccessHandler(function(details) {
+      let html = `
+        <div class="form-section">
+          <h3>PO Details: ${poId}</h3>
+          <div class="items-table-container">
+            <table id="poDetailsTable" class="items-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>PO ID</th><th>Detail ID</th>
+                  <th>Supplier ID</th><th>Supplier Name</th><th>State</th>
+                  <th>City</th><th>Bill Num</th>
+                  <th>Item ID</th><th>Item Type</th><th>Item Category</th>
+                  <th>Item Subcategory</th><th>Item Name</th><th>QTY Purchased</th>
+                  <th>Unit Cost</th><th>Cost Excl Tax</th><th>Tax Rate</th>
+                  <th>Total Tax</th><th>Cost Incl Tax</th><th>Shipping Fees</th>
+                  <th>Total Purchase Price</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      details.forEach(detail => {
+        const d = (detail.date instanceof Date)
+          ? detail.date.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+          : detail.date||'';
+        html += `
+          <tr data-detail-id="${detail.detailId}">
+            <td>${d}</td>
+            <td>${detail.poId}</td>
+            <td>${detail.detailId}</td>
+            <td>${detail.supplierId}</td>
+            <td>${detail.supplierName}</td>
+            <td>${detail.state}</td>
+            <td>${detail.city}</td>
+            <td>${detail.billNum}</td>
+            <td class="item-id">${detail.itemId}</td>
+            <td class="item-type">${detail.itemType}</td>
+            <td class="item-category">${detail.itemCategory}</td>
+            <td class="item-subcategory">${detail.itemSubcategory}</td>
+            <td class="item-name">${detail.itemName}</td>
+            <td class="qty-purchased">${detail.qtyPurchased}</td>
+            <td class="unit-cost">${detail.unitCost.toFixed(2)}</td>
+            <td class="cost-excl-tax">${detail.costExclTax.toFixed(2)}</td>
+            <td class="tax-rate">${detail.taxRate.toFixed(2)}%</td>
+            <td class="total-tax">${detail.totalTax.toFixed(2)}</td>
+            <td class="cost-incl-tax">${detail.costInclTax.toFixed(2)}</td>
+            <td class="shipping-fees">${detail.shippingFees.toFixed(2)}</td>
+            <td class="total-price">${detail.totalPrice.toFixed(2)}</td>
+            <td class="actions-cell">
+              <button class="action-btn delete-btn"
+                      onclick="poDeleteDetail('${detail.detailId}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      html += `
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer" style="text-align:right; margin-top:10px;">
+            <button id="poEditAllBtn" class="btn" onclick="poEnableEditMode()">Edit</button>
+            <button id="poSaveAllBtn" class="btn" style="display:none" onclick="poSavePODetails()">Update</button>
+            <button id="poCancelAllBtn" class="btn" style="display:none" onclick="poCancelEditMode()">Cancel</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('poDetailsContent').innerHTML = html;
+      document.getElementById('poDetailsModal').style.display = 'block';
+      poHideProcessing();
+    })
+    .withFailureHandler(function(err){
+      poHideProcessing();
+      alert("Error: "+err.message);
+    })
+    .poGetPODetails(poId);
+}
+
+    // Close PO details modal (no change, just for context)
+    function poCloseDetailsModal() {
+      document.getElementById('poDetailsModal').style.display = 'none';
+    }
+
+    // Search POs (no change, just for context)
+    function poSearchPOs() {
+      const criteria = document.getElementById('poSearchCriteria').value;
+      const query = document.getElementById('poSearchInput').value.toLowerCase().trim();
+
+      if (!query) {
+        poFilteredPOs = [...poAllPOs];
+      } else {
+        poFilteredPOs = poAllPOs.filter(po => {
+          if (criteria === 'all') {
+            return (
+              (po.id && po.id.toLowerCase().includes(query)) ||
+              (po.supplierName && po.supplierName.toLowerCase().includes(query)) ||
+              (po.billNum && po.billNum.toLowerCase().includes(query)) ||
+              (po.pmtStatus && po.pmtStatus.toLowerCase().includes(query)) ||
+              (po.shippingStatus && po.shippingStatus.toLowerCase().includes(query))
+            );
+          } else if (criteria === 'PO ID') {
+            return po.id && po.id.toLowerCase().includes(query);
+          } else if (criteria === 'Supplier Name') {
+            return po.supplierName && po.supplierName.toLowerCase().includes(query);
+          } else if (criteria === 'Bill Num') {
+            return po.billNum && po.billNum.toLowerCase().includes(query);
+          } else if (criteria === 'PMT Status') {
+            return po.pmtStatus && po.pmtStatus.toLowerCase().includes(query);
+          } else if (criteria === 'Shipping Status') {
+            return po.shippingStatus && po.shippingStatus.toLowerCase().includes(query);
+          }
+          return true;
+        });
+      }
+
+      poCurrentPage = 1;
+      poRenderPOTable();
+
+      if (poFilteredPOs.length === 0) {
+        alert('No matching data found');
+      }
+    }
+
+    // Clear search (no change, just for context)
+    function poClearSearch() {
+      document.getElementById('poSearchInput').value = '';
+      document.getElementById('poSearchCriteria').value = 'all';
+      poFilteredPOs = [...poAllPOs];
+      poCurrentPage = 1;
+      poRenderPOTable();
+    }
+
+    // Show processing overlay (no change, just for context)
+    function poShowProcessing() {
+      document.getElementById('poProcessingOverlay').style.display = 'flex';
+    }
+
+    // Hide processing overlay (no change, just for context)
+    function poHideProcessing() {
+      document.getElementById('poProcessingOverlay').style.display = 'none';
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// recalc the derived columns on the fly
+function poRecalcRow(row) {
+  const qty = parseFloat(row.querySelector('.edit-qty-purchased').value) || 0;
+  const unitCost = parseFloat(row.querySelector('.edit-unit-cost').value) || 0;
+  const taxRate = parseFloat(row.querySelector('.edit-tax-rate').value)/100 || 0;
+
+  const excl = qty * unitCost;
+  const tax   = excl * taxRate;
+  const incl  = excl + tax;
+  const ship  = parseFloat(row.querySelector('.shipping-fees').textContent) || 0;  // unchanged
+  const total = incl + ship;
+
+  row.querySelector('.cost-excl-tax').textContent = excl.toFixed(2);
+  row.querySelector('.total-tax').textContent    = tax.toFixed(2);
+  row.querySelector('.cost-incl-tax').textContent = incl.toFixed(2);
+  row.querySelector('.total-price').textContent   = total.toFixed(2);
+}
+
+// 4. Delete: ask for confirmation, then call server
+function poDeleteDetail(id) {
+  if (!confirm('Delete this PO item permanently?')) return;
+  poShowProcessing();
+  const poId = document.querySelector('#poDetailsContent h3').textContent.split(': ')[1];
+  google.script.run
+    .withSuccessHandler(() => {
+      poHideProcessing();
+      alert('PO Item Deleted');
+      poCloseDetailsModal();
+      poLoadPOs();
+    })
+    .poDeletePODetail(id, poId);
+}
+
+
+// 1️⃣ Enable global edit mode
+function poEnableEditMode() {
+  document.getElementById('poEditAllBtn').style.display   = 'none';
+  document.getElementById('poSaveAllBtn').style.display   = 'inline-block';
+  document.getElementById('poCancelAllBtn').style.display = 'inline-block';
+
+  document.querySelectorAll('#poDetailsTable tbody tr').forEach(row => {
+    // ITEM NAME → dropdown
+    const nameTd = row.querySelector('.item-name');
+    const curr   = nameTd.textContent;
+    nameTd.innerHTML = `<select class="edit-item-select">
+      ${poItems.map(i=>`<option value="${i.id}" ${i.name===curr?'selected':''}>${i.name}</option>`).join('')}
+    </select>`;
+    nameTd.querySelector('select').onchange = function(){
+      const it = poItems.find(x=>x.id===this.value);
+      row.querySelector('.item-id').textContent          = it.id;
+      row.querySelector('.item-type').textContent        = it.type;
+      row.querySelector('.item-category').textContent    = it.category;
+      row.querySelector('.item-subcategory').textContent = it.subcategory;
+    };
+
+    // QTY Purchased
+    const q = row.querySelector('.qty-purchased').textContent;
+    row.querySelector('.qty-purchased').innerHTML =
+      `<input type="number" class="edit-qty" value="${q}" min="0">`;
+    row.querySelector('.edit-qty').oninput = ()=> poRecalcRow(row);
+
+    // Unit Cost
+    const c = row.querySelector('.unit-cost').textContent;
+    row.querySelector('.unit-cost').innerHTML =
+      `<input type="number" class="edit-cost" value="${c}" step="0.01" min="0">`;
+    row.querySelector('.edit-cost').oninput = ()=> poRecalcRow(row);
+
+    // Tax Rate
+    const t = row.querySelector('.tax-rate').textContent.replace('%','');
+    row.querySelector('.tax-rate').innerHTML =
+      `<input type="number" class="edit-tax" value="${t}" step="0.01" min="0" max="100"> %`;
+    row.querySelector('.edit-tax').oninput = ()=> poRecalcRow(row);
+  });
+}
+
+// 2️⃣ Recalculate derived columns
+function poRecalcRow(row) {
+  const qty  = parseFloat(row.querySelector('.edit-qty').value)||0;
+  const cost = parseFloat(row.querySelector('.edit-cost').value)||0;
+  const tax  = parseFloat(row.querySelector('.edit-tax').value)/100||0;
+  const excl = qty*cost;
+  const totTax = excl*tax;
+  const incl  = excl+totTax;
+  const ship  = parseFloat(row.querySelector('.shipping-fees').textContent)||0;
+  row.querySelector('.cost-excl-tax').textContent = excl.toFixed(2);
+  row.querySelector('.total-tax').textContent    = totTax.toFixed(2);
+  row.querySelector('.cost-incl-tax').textContent= incl.toFixed(2);
+  row.querySelector('.total-price').textContent  = (incl+ship).toFixed(2);
+}
+
+// 3️⃣ Cancel & reload
+function poCancelEditMode() {
+  const poId = document.querySelector('#poDetailsContent h3').textContent.split(':')[1].trim();
+  poViewPODetails(poId);
+}
+
+// 4️⃣ Gather all and save
+function poSavePODetails() {
+  const poId = document.querySelector('#poDetailsContent h3')
+                 .textContent.split(':')[1].trim();
+  const updates = [];
+  document.querySelectorAll('#poDetailsTable tbody tr').forEach(row => {
+    updates.push({
+      detailId:     row.dataset.detailId,
+      poId:         poId,
+      itemId:       row.querySelector('.item-id').textContent.trim(),
+      itemName:     row.querySelector('.edit-item-select').selectedOptions[0].textContent,
+      qtyPurchased: parseFloat(row.querySelector('.edit-qty').value) || 0,
+      unitCost:     parseFloat(row.querySelector('.edit-cost').value) || 0,
+      taxRate:      parseFloat(row.querySelector('.edit-tax').value) || 0,
+      // derived values pulled directly from the table cells
+      costExclTax:  parseFloat(row.querySelector('.cost-excl-tax').textContent) || 0,
+      totalTax:     parseFloat(row.querySelector('.total-tax').textContent) || 0,
+      costInclTax:  parseFloat(row.querySelector('.cost-incl-tax').textContent) || 0,
+      shippingFees: parseFloat(row.querySelector('.shipping-fees').textContent) || 0,
+      totalPrice:   parseFloat(row.querySelector('.total-price').textContent) || 0
+    });
+  });
+
+  poShowProcessing();
+  google.script.run
+    .withSuccessHandler(()=>{
+      poHideProcessing();
+      alert('PO Details Updated');
+      poCloseDetailsModal();
+      poLoadPOs();
+    })
+    .withFailureHandler(err=>{
+      poHideProcessing();
+      alert('Update failed: ' + err.message);
+    })
+    .poSavePODetails(updates);
+}
+
+
+// 5️⃣ Per‑row delete (keep yours as is)
+function poDeleteDetail(detailId) {
+  if (!confirm('Delete this item?')) return;
+  poShowProcessing();
+  const poId = document.querySelector('#poDetailsContent h3').textContent.split(':')[1].trim();
+  google.script.run
+    .withSuccessHandler(()=>{
+      poHideProcessing();
+      alert('PO Item Deleted');
+      poCloseDetailsModal();
+      poLoadPOs();
+    })
+    .poDeletePODetail(detailId, poId);
+}
+  </script>
+</body>
+</html>
