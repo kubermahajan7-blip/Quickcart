@@ -225,21 +225,7 @@
         <i class="fas fa-credit-card"></i> <span>Payments</span>
       </a>
 
-      <!-- <a href="<?= getScriptUrl() ?>?page=reports" class="nav-item <?= currentPage === 'reports' ? 'active' : '' ?>">
-        <i class="fas fa-chart-pie"></i> <span>Reports</span>
-      </a>
-
-      <a href="<?= getScriptUrl() ?>?page=users" class="nav-item <?= currentPage === 'users' ? 'active' : '' ?>">
-        <i class="fas fa-user-cog"></i> <span>Users</span>
-      </a>
-
-      <a href="<?= getScriptUrl() ?>?page=settings" class="nav-item <?= currentPage === 'settings' ? 'active' : '' ?>">
-        <i class="fas fa-cogs"></i> <span>Settings</span>
-      </a>
-
-      <a href="<?= getScriptUrl() ?>?page=logout" class="nav-item">
-        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-      </a> -->
+      
 
     </nav>
   </div>
@@ -248,11 +234,7 @@
   <div class="main-content">
     <!-- Top Bar -->
     <div class="top-bar">
-      <!-- <div class="top-bar-links">
-        <a href="#"><i class="fas fa-bell"></i></a>
-        <a href="#"><i class="fas fa-cog"></i></a>
-        <a href="#"><i class="fas fa-user"></i></a>
-      </div> -->
+     
     </div>
     
     <!-- Dynamic Content Injection -->
@@ -262,57 +244,8 @@
   </div>
   
   <script>
-    // The active class is now applied directly by Apps Script templating based on 'currentPage' variable.
-    // This JavaScript block is no longer needed for active navigation highlighting.
-    // document.addEventListener('DOMContentLoaded', function() {
-    //   const navItems = document.querySelectorAll('.nav-item');
-    //   const urlParams = new URLSearchParams(window.location.search);
-    //   const currentPage = urlParams.get('page') || 'dashboard';
-      
-    //   navItems.forEach(item => {
-    //     const href = item.getAttribute('href');
-    //     if (href.includes(`page=${currentPage}`)) {
-    //       item.classList.add('active');
-    //     }
-    //   });
-    // });
-    
-    // // Example: Add event listener for logout (replace with actual logout logic)
-    // const logoutLink = document.getElementById('logout-link');
-    // if (logoutLink) {
-    //     logoutLink.addEventListener('click', function(event) {
-    //         event.preventDefault(); // Prevent default link behavior
-    //         // Use a custom modal or message box instead of alert()
-    //         const messageBox = document.createElement('div');
-    //         messageBox.style.cssText = `
-    //             position: fixed;
-    //             top: 50%;
-    //             left: 50%;
-    //             transform: translate(-50%, -50%);
-    //             background-color: white;
-    //             padding: 20px;
-    //             border-radius: 8px;
-    //             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    //             z-index: 10000;
-    //             font-family: 'Roboto', sans-serif;
-    //             color: #333;
-    //             text-align: center;
-    //         `;
-    //         messageBox.innerHTML = `
-    //             <p style="margin-bottom: 15px;">Logout functionality to be implemented!</p>
-    //             <button style="
-    //                 background-color: #008080;
-    //                 color: white;
-    //                 border: none;
-    //                 padding: 8px 15px;
-    //                 border-radius: 5px;
-    //                 cursor: pointer;
-    //                 font-size: 14px;
-    //             " onclick="this.parentNode.remove()">OK</button>
-    //         `;
-    //         document.body.appendChild(messageBox);
-    //     });
-    // }
+   
   </script>
 </body>
 </html>
+
